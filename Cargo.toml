@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "util",
+    "storage",
+    "logchain",
+    "index",
+]
