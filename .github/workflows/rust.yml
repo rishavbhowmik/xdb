@@ -16,23 +16,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - run: cargo build --verbose
-    - run: cargo install grcov
-    - run: export RUSTC_BOOTSTRAP=1
-    - run: rustup component add llvm-tools-preview
-    - run: export RUSTFLAGS="-Zinstrument-coverage"
-    - run: cargo build
-    - run: export LLVM_PROFILE_FILE=".profraw"
-    - run: export CARGO_INCREMENTAL=0
-    - run: export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
-    - run: export RUSTDOCFLAGS="-Cpanic=abort"
-    - run: cargo build
-    - run: cargo test --verbose
-    - run: mkdir -p ./docs/test_coverage/
-    - run: grcov . -s . --binary-path ./target/debug/ -t html --branch --ignore-not-existing -o ./docs/test_coverage/
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    
+  Code coverage:
+    - name: Run tests
+    - name: rust-grcov
+      uses: actions-rs/grcov@v0.1.5
     - run: git config --local user.name "${{ secrets.GITCONFIG_NAME }}"
     - run: git config --local user.email "${{ secrets.GITCONFIG_EMAIL }}"
     - run: git add ./docs/test_coverage/
     - run: git commit -m "update ./docs/test_coverage/" --allow-empty
     - run: git push
-
