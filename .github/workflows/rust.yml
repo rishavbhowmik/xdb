@@ -27,7 +27,6 @@ jobs:
     - run: export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
     - run: export RUSTDOCFLAGS="-Cpanic=abort"
     - run: cargo build
-    - run: rm ./target/debug/deps/*.gcda
     - run: cargo test --verbose
     - run: mkdir -p ./docs/test_coverage/
     - run: grcov . -s . --binary-path ./target/debug/ -t html --branch --ignore-not-existing -o ./docs/test_coverage/
