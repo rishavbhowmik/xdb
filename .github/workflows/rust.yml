@@ -1,0 +1,36 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --verbose
+    - name: Test
+      run: cargo install grcov
+      run: export RUSTC_BOOTSTRAP=1
+      run: rustup component add llvm-tools-preview
+      run: export RUSTFLAGS="-Zinstrument-coverage"
+      run: cargo build
+      run: export LLVM_PROFILE_FILE=".profraw"
+      run: export CARGO_INCREMENTAL=0
+      run: export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
+      run: export RUSTDOCFLAGS="-Cpanic=abort"
+      run: cargo build
+      run: rm ./target/debug/deps/*.gcda
+      run: cargo test --verbose
+      run: mkdir -p ./docs/test_coverage/
+      run: grcov . -s . --binary-path ./target/debug/ -t html --branch --ignore-not-existing -o ./docs/test_coverage/
+
