@@ -40,8 +40,4 @@ jobs:
           RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
           RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
       - uses: actions-rs/grcov@v0.1
-      - run: git config --local user.name "${{ secrets.GITCONFIG_NAME }}"
-      - run: git config --local user.email "${{ secrets.GITCONFIG_EMAIL }}"
-      - run: git add ./docs/test_coverage/
-      - run: git commit -m "update ./docs/test_coverage/" --allow-empty
-      - run: git push
+      - uses: codecov/codecov-action@v2
