@@ -80,7 +80,8 @@ pub fn append_log(
         }
         let (_, segment_payload) = result.unwrap();
         let next_block_index = bytes_to_u32(&segment_payload[0..4]);
-        if next_block_index == BlockIndex::MAX { // reached last block
+        if next_block_index == BlockIndex::MAX {
+            // reached last block
             let existing_last_block_void_size =
                 storage.block_len() as usize - BLOCK_HEADER_SIZE - segment_payload.len();
             // - segment payload list with remaining data
@@ -89,7 +90,8 @@ pub fn append_log(
             if payload_list_result.is_err() {
                 return Err(payload_list_result.unwrap_err());
             }
-            let (payload_list, new_next_block_index, new_last_block_index) = payload_list_result.unwrap();
+            let (payload_list, new_next_block_index, new_last_block_index) =
+                payload_list_result.unwrap();
             // - update next_block_index of existing last segment
             let existing_last_segment_new_block_data = [
                 &u32_to_bytes(new_next_block_index),
@@ -98,7 +100,8 @@ pub fn append_log(
             ]
             .concat();
             // - write updated last block
-            let write_result = storage.write_block(last_block_index, &existing_last_segment_new_block_data);
+            let write_result =
+                storage.write_block(last_block_index, &existing_last_segment_new_block_data);
             if write_result.is_err() {
                 return Err(Error {
                     code: 4,
