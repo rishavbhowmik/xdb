@@ -12,7 +12,6 @@ Each segment is stored along with `next_segment_index` as the block data of stor
 
 In order to traverse the log, index of **head segment** of the log must be provided.
 
-
 ### File structure logchain based storage file.
 
 ```

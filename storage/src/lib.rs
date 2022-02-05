@@ -65,7 +65,7 @@ struct BlockHeader {
     block_data_size: BlockLength,
 }
 
-const BLOCK_HEADER_SIZE: usize = std::mem::size_of::<BlockHeader>();
+pub const BLOCK_HEADER_SIZE: usize = std::mem::size_of::<BlockHeader>();
 
 impl BlockHeader {
     fn new(block_data_size: u32) -> BlockHeader {
@@ -451,8 +451,7 @@ impl Storage {
         Ok(self.read_pointer)
     }
     /// Read block data from storage file
-    /// - return (block_data, read_pointer)
-    /// - returns: read pointer
+    /// - return (read_pointer, block_data)
     pub fn read_block(&mut self, block_index: BlockIndex) -> Result<(usize, Vec<u8>), Error> {
         if self.is_empty_block(block_index) {
             // return current read_pointer and empty vector
