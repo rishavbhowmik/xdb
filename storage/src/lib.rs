@@ -1,4 +1,4 @@
-use ::util::{Error, bytes_to_u32, u32_to_bytes};
+use util::{bytes_to_u32, u32_to_bytes, Error};
 
 /// 4 bytes for index for a block
 pub type BlockIndex = u32;
