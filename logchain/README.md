@@ -45,9 +45,10 @@ In order to traverse the log, index of **head segment** of the log must be provi
 
 ### Operations
 
-1. Create/Append a log
-2. Read a log
-3. Delete a log
+1. Create a log
+2. Append a log
+3. Read a log
+4. Delete a log
 
 ## Usage for xdb
 
