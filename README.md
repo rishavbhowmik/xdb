@@ -20,8 +20,11 @@ Hopefully a graph based Database with a very fast storage engine without wearing
 - [ ] Atomic arrangement of Document CRUD operations for pooled queries
 - [ ] Add multi-threaded index Read operations
 - [ ] Cypher Query Language support
+- [ ] Basic user authentication with DB server
 
 ## Version 3.0 - Let's find a good name for this project
 
 - [ ] Implement master-master protocol
 - [ ] Add support for multiple DB servers
+- [ ] User authentication w r t multiple DB servers
+- [ ] ssh bases user authentication
