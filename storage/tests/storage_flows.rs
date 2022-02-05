@@ -1,4 +1,4 @@
-use::storage::{Storage};
+use ::storage::Storage;
 
 fn read_full_file(file_name: &str) -> Vec<u8> {
     use std::fs::read;
