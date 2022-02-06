@@ -124,3 +124,45 @@ pub fn append_log(
         }
     }
 }
+
+/// Delete log from storage
+/// Returns (first_block_index, last_block_index)
+pub fn delete_log(
+    storage: &mut Storage,
+    start_segment_block_index: BlockIndex,
+    hard_delete: bool,
+) -> Result<(BlockIndex, BlockIndex), Error> {
+    let mut block_index_cache = start_segment_block_index;
+    loop {
+        let result = storage.read_block(block_index_cache);
+        if result.is_err() {
+            return Err(Error {
+                code: 6,
+                message: "Failed to read log".to_string(),
+            });
+        }
+        let (_, segment_payload) = result.unwrap();
+        let next_block_index = bytes_to_u32(&segment_payload[0..4]);
+        if next_block_index == BlockIndex::MAX {
+            // reached last block
+            let delete_result = storage.delete_block(next_block_index, hard_delete);
+            if delete_result.is_err() {
+                return Err(Error {
+                    code: 7,
+                    message: "Failed to delete log".to_string(),
+                });
+            } else {
+                return Ok((start_segment_block_index, block_index_cache));
+            }
+        } else {
+            let delete_result = storage.delete_block(next_block_index, hard_delete);
+            if delete_result.is_err() {
+                return Err(Error {
+                    code: 8,
+                    message: "Failed to delete log".to_string(),
+                });
+            }
+            block_index_cache = next_block_index;
+        }
+    }
+}
