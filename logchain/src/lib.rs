@@ -2,7 +2,7 @@ use storage::{BlockIndex, Storage, BLOCK_HEADER_SIZE};
 use util::{bytes_to_u32, u32_to_bytes, Error};
 
 /// Returns (Vector(next_block_index, data_chunk), first_block_index, last_block_index)
-fn make_segment_payload_list(
+pub fn make_segment_payload_list(
     storage: &Storage,
     data: &[u8],
 ) -> Result<(Vec<(BlockIndex, Vec<u8>)>, BlockIndex, BlockIndex), Error> {
