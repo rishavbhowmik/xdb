@@ -14,6 +14,7 @@ Index is basically an in-memory B-Tree or Hash-Map to search of an item without 
 ## Persistence of Indexes in storage
 
 Things to ensure while persisting an index in storage:
+
 - Index must be persisted for every write(INSERT/DELETE/UPDATE) operation.
 - Any failed operation must be retryable.
 

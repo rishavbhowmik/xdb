@@ -52,7 +52,7 @@ In order to traverse the log, index of **head segment** of the log must be provi
 
 ## Usage for xdb
 
-*using mongodb's naming convention to explain*
+_using mongodb's naming convention to explain_
 
 Logs are requied to implement document storage and index mapping storage.
 
