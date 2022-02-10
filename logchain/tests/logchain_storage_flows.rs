@@ -61,7 +61,6 @@ fn make_segment_payload_list_new_storage() {
     let expected = fetch_state("on_create.hex");
     let actual = read_full_file(tmp_file_path);
     assert_eq!(actual, expected);
-
     // create log 0
     let log_0_data = vec![
         1 as u8, 2 as u8, 3 as u8, 4 as u8, 5 as u8, 6 as u8, 7 as u8, 8 as u8, 9 as u8, 10 as u8,
@@ -87,7 +86,77 @@ fn make_segment_payload_list_new_storage() {
     remove_dir_contents(std::path::PathBuf::from(tmp_dir_path));
 }
 
-fn make_segment_payload_list_existing_storage() {}
+#[test]
+fn make_segment_payload_list_existing_storage() {
+    fn fetch_state(state_file: &str) -> Vec<u8> {
+        use std::path::PathBuf;
+        let path: PathBuf = [
+            "tests/samples/make_segment_payload_list_existing_storage",
+            state_file,
+        ]
+        .iter()
+        .collect();
+        read_full_file(path.to_str().unwrap())
+    }
+    // let tmp_file_path = "./tmp/make_segment_payload_list_existing_storage.hex";
+    let tmp_dir_path = tempfile::tempdir().unwrap().into_path();
+    let tmp_file_path: std::path::PathBuf = [
+        tmp_dir_path.to_str().unwrap().to_string(),
+        String::from("make_segment_payload_list_existing_storage.hex"),
+    ]
+    .iter()
+    .collect();
+    let tmp_file_path = tmp_file_path.to_str().unwrap();
+    println!("{}", tmp_file_path);
+
+    // copy "tests/samples/make_segment_payload_list_existing_storage/w-0_w-1_w-2_sd-0_hd-0_sd-1_hd-2_w-3_w-4_w-5_sd-3.hex" to tmp_file_path
+    let mut src_path =
+        std::path::PathBuf::from("tests/samples/make_segment_payload_list_existing_storage");
+    src_path.push("w-0_w-1_w-2_sd-0_hd-0_sd-1_hd-2_w-3_w-4_w-5_sd-3.hex");
+    std::fs::copy(src_path, tmp_file_path.clone()).unwrap();
+    let mut storage = Storage::open(String::from(tmp_file_path)).unwrap();
+    // check log 0
+    let log_0_data = vec![
+        1 as u8, 2 as u8, 3 as u8, 4 as u8, 5 as u8, 6 as u8, 7 as u8, 8 as u8, 9 as u8, 10 as u8,
+        11 as u8, 12 as u8, 13 as u8, 14 as u8, 15 as u8, 16 as u8,
+    ];
+    let result = make_segment_payload_list(&mut storage, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let (segment_list, first_block_index, last_block_index) = result.unwrap();
+    // ([(0, [1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8]), (1, [255, 255, 255, 255, 9, 10, 11, 12, 13, 14, 15, 16])], 0 , 1)
+    assert_eq!(first_block_index, 0);
+    assert_eq!(last_block_index, 1);
+    assert_eq!(segment_list.len(), 2);
+    assert_eq!(segment_list[0].0, 0);
+    assert_eq!(segment_list[0].1.len(), SIZE_OF_BLOCK_INDEX + 8 as usize);
+    assert_eq!(segment_list[1].0, 1);
+    assert_eq!(segment_list[1].1.len(), SIZE_OF_BLOCK_INDEX + 8 as usize);
+    // check log 1
+    let log_1_data = vec![
+        17 as u8, 18 as u8, 19 as u8, 20 as u8, 21 as u8, 22 as u8, 23 as u8, 24 as u8, 25 as u8,
+        26 as u8, 27 as u8, 28 as u8, 29 as u8, 30 as u8, 31 as u8, 32 as u8, 33 as u8, 34 as u8,
+        35 as u8, 36 as u8, 37 as u8, 38 as u8, 39 as u8, 40 as u8, 41 as u8, 42 as u8, 43 as u8,
+        44 as u8, 45 as u8, 46 as u8, 47 as u8, 48 as u8, 49 as u8, 50 as u8, 51 as u8, 52 as u8,
+    ];
+    let result = make_segment_payload_list(&mut storage, &log_1_data);
+    assert_eq!(result.is_ok(), true);
+    let (segment_list, first_block_index, last_block_index) = result.unwrap();
+    // ([(0, [1, 0, 0, 0, 17, 18, 19, 20, 21, 22, 23, 24]), (1, [3, 0, 0, 0, 25, 26, 27, 28, 29, 30, 31, 32]), (3, [6, 0, 0, 0, 33, 34, 35, 36, 37, 38, 39, 40]), (6, [7, 0, 0, 0, 41, 42, 43, 44, 45, 46, 47, 48]), (7, [255, 255, 255, 255, 49, 50, 51, 52])], 0, 7)
+    assert_eq!(first_block_index, 0);
+    assert_eq!(last_block_index, 7);
+    assert_eq!(segment_list.len(), 5);
+    assert_eq!(segment_list[0].0, 0);
+    assert_eq!(segment_list[0].1.len(), SIZE_OF_BLOCK_INDEX + 8 as usize);
+    assert_eq!(segment_list[1].0, 1);
+    assert_eq!(segment_list[1].1.len(), SIZE_OF_BLOCK_INDEX + 8 as usize);
+    assert_eq!(segment_list[2].0, 3);
+    assert_eq!(segment_list[2].1.len(), SIZE_OF_BLOCK_INDEX + 8 as usize);
+    assert_eq!(segment_list[3].0, 6);
+    assert_eq!(segment_list[3].1.len(), SIZE_OF_BLOCK_INDEX + 8 as usize);
+    assert_eq!(segment_list[4].0, 7);
+    assert_eq!(segment_list[4].1.len(), SIZE_OF_BLOCK_INDEX + 4 as usize);
+    remove_dir_contents(std::path::PathBuf::from(tmp_dir_path));
+}
 
 fn create_log_new_storage() {}
 
