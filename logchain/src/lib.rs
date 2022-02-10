@@ -7,16 +7,21 @@ pub fn make_segment_payload_list(
     data: &[u8],
 ) -> Result<(Vec<(BlockIndex, Vec<u8>)>, BlockIndex, BlockIndex), Error> {
     let block_len = storage.block_len();
-    let block_required = data.len() as BlockIndex / block_len;
-    let block_indexes = storage.search_block_allocation_indexes(block_required);
-    if (block_indexes.len() as BlockIndex) < block_required {
+    let chunks = data.chunks(block_len as usize);
+    let block_required = data.len() / block_len as usize
+        + if (data.len() % block_len as usize) > 0 {
+            1 as usize
+        } else {
+            0 as usize
+        }; // same as chunks.len()
+    let block_indexes = storage.search_block_allocation_indexes(block_required as BlockIndex);
+    if block_indexes.len() < block_required {
         return Err(Error {
             code: 1,
             message: "Not enough space for log".to_string(),
         });
     }
-    let segment_payloads = data
-        .chunks(block_len as usize)
+    let segment_payloads = chunks
         .enumerate()
         .map(|(block_index, data_chunk)| {
             (
