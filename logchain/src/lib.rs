@@ -1,15 +1,17 @@
 use storage::{BlockIndex, Storage, BLOCK_HEADER_SIZE};
 use util::{bytes_to_u32, u32_to_bytes, Error};
 
+const BLOCK_INDEX_SIZE: usize = std::mem::size_of::<BlockIndex>();
 /// Returns (Vector(next_block_index, data_chunk), first_block_index, last_block_index)
 pub fn make_segment_payload_list(
     storage: &Storage,
     data: &[u8],
 ) -> Result<(Vec<(BlockIndex, Vec<u8>)>, BlockIndex, BlockIndex), Error> {
-    let block_len = storage.block_len();
-    let chunks = data.chunks(block_len as usize);
-    let block_required = data.len() / block_len as usize
-        + if (data.len() % block_len as usize) > 0 {
+    let block_len = storage.block_len() as usize;
+    let chunk_len = block_len - BLOCK_INDEX_SIZE;
+    let chunks = data.chunks(chunk_len);
+    let block_required = data.len() / chunk_len as usize
+        + if (data.len() % chunk_len as usize) > 0 {
             1 as usize
         } else {
             0 as usize
