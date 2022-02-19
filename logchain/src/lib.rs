@@ -47,7 +47,7 @@ pub fn make_segment_payload_list(
 }
 
 /// Add new log to storage with new block index
-/// Returns (first_block_index, last_block_index)
+/// - Returns (first_block_index, last_block_index)
 pub fn create_log(storage: &mut Storage, data: &[u8]) -> Result<(BlockIndex, BlockIndex), Error> {
     let result = make_segment_payload_list(storage, data);
     if result.is_err() {
@@ -69,7 +69,7 @@ pub fn create_log(storage: &mut Storage, data: &[u8]) -> Result<(BlockIndex, Blo
 /// Append existing log to storage with new block index
 /// - appends last block with 1st chunk of data
 /// - store remaining chunks of data in new blocks
-/// Returns last_block_index
+/// - Returns last_block_index
 pub fn append_log(
     storage: &mut Storage,
     block_index: BlockIndex,
@@ -133,7 +133,7 @@ pub fn append_log(
 }
 
 /// Delete log from storage
-/// Returns (first_block_index, last_block_index)
+/// - Returns (first_block_index, last_block_index)
 pub fn delete_log(
     storage: &mut Storage,
     start_segment_block_index: BlockIndex,
