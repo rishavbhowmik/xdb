@@ -90,10 +90,14 @@ pub fn append_log(
         if next_block_index == BlockIndex::MAX {
             // reached last block
             let existing_last_block_void_size =
-                storage.block_len() as usize - BLOCK_HEADER_SIZE - segment_payload.len();
-            // - segment payload list with remaining data
+                storage.block_len() as usize - segment_payload.len();
+            // - segment payload list with remaining data if any
             let payload_list_result =
-                make_segment_payload_list(storage, &data[existing_last_block_void_size..]);
+                if (data.len() as isize - existing_last_block_void_size as isize) > 0 {
+                    make_segment_payload_list(storage, &data[existing_last_block_void_size..])
+                } else {
+                    Ok((vec![], BlockIndex::MAX, last_block_index))
+                };
             if payload_list_result.is_err() {
                 return Err(payload_list_result.unwrap_err());
             }
@@ -103,7 +107,13 @@ pub fn append_log(
             let existing_last_segment_new_block_data = [
                 &u32_to_bytes(new_next_block_index),
                 &segment_payload[4..],
-                &data[0..(existing_last_block_void_size)],
+                &data[0..(if existing_last_block_void_size == 0 {
+                    0 as usize
+                } else if existing_last_block_void_size > data.len() {
+                    data.len()
+                } else {
+                    existing_last_block_void_size as usize
+                })],
             ]
             .concat();
             // - write updated last block
