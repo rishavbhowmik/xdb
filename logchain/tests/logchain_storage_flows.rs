@@ -301,7 +301,251 @@ fn create_log_existing_storage() {
     remove_dir_contents(std::path::PathBuf::from(tmp_dir_path));
 }
 
-fn append_log_new_storage() {}
+#[test]
+fn append_log_new_storage() {
+    fn fetch_state(state_file: &str) -> Vec<u8> {
+        use std::path::PathBuf;
+        let path: PathBuf = ["tests/samples/append_log_new_storage", state_file]
+            .iter()
+            .collect();
+        read_full_file(path.to_str().unwrap())
+    }
+    // let tmp_file_path = "./tmp/append_log_new_storage.hex";
+    let tmp_dir_path = tempfile::tempdir().unwrap().into_path();
+    let tmp_file_path: std::path::PathBuf = [
+        tmp_dir_path.to_str().unwrap().to_string(),
+        String::from("append_log_new_storage.hex"),
+    ]
+    .iter()
+    .collect();
+    let tmp_file_path = tmp_file_path.to_str().unwrap();
+
+    // create new storage
+    let block_len = 12;
+    let storage_result = Storage::new(String::from(tmp_file_path), block_len);
+    assert_eq!(storage_result.is_ok(), true);
+    let mut storage = storage_result.unwrap();
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state("create.hex");
+    assert_eq!(actual, expected);
+
+    // create log 0 (starts at block 0)
+    let log_0_data = vec![
+        1 as u8, 2 as u8, 3 as u8, 4 as u8, 5 as u8, 6 as u8, 7 as u8, 8 as u8, 9 as u8, 10 as u8,
+        11 as u8, 12 as u8, 13 as u8, 14 as u8, 15 as u8, 16 as u8,
+    ];
+    let result = create_log(&mut storage, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    // (0, 1)
+    assert_eq!(first_block_index, 0);
+    assert_eq!(last_block_index, 1);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state("create_add-log-0.hex");
+    assert_eq!(actual, expected);
+
+    let log_0_first_block_index = first_block_index;
+
+    // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with single traversal
+    let log_0_data = vec![
+        8 as u8, 7 as u8, 6 as u8, 5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8,
+    ];
+    let result = append_log(&mut storage, last_block_index, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 2);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state("create_add-log-0_append-log-0.hex");
+    assert_eq!(actual, expected); // ??
+
+    // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with traversal from start of log
+    let log_0_data = vec![
+        8 as u8, 7 as u8, 6 as u8, 5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8,
+    ];
+    let result = append_log(&mut storage, 0, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 3);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state("create_add-log-0_append-log-0_append-log-0.hex");
+    assert_eq!(actual, expected);
+
+    // append log 0 - [4, 3, 2, 1] - cover partial new block
+    let log_0_data = vec![4 as u8, 3 as u8, 2 as u8, 1 as u8];
+    let result = append_log(&mut storage, last_block_index, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 4);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state("create_add-log-0_append-log-0_append-log-0_append-log-0.hex");
+    assert_eq!(actual, expected);
+
+    // append log 0 - [2, 1] - cover partial last block
+    let log_0_data = vec![2 as u8, 1 as u8];
+    let result = append_log(&mut storage, last_block_index, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 4);
+    let actual = read_full_file(tmp_file_path);
+    let expected =
+        fetch_state("create_add-log-0_append-log-0_append-log-0_append-log-0_append-log-0.hex");
+    assert_eq!(actual, expected);
+
+    // append log 0 - [2,1] - cover partial last block (end of block)
+    let log_0_data = vec![2 as u8, 1 as u8];
+    let result = append_log(&mut storage, last_block_index, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 4);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state(
+        "create_add-log-0_append-log-0_append-log-0_append-log-0_append-log-0_append-log-0.hex",
+    );
+    assert_eq!(actual, expected);
+
+    // append log 0 - [4, 3, 2, 1] - cover partial new block
+    let log_0_data = vec![4 as u8, 3 as u8, 2 as u8, 1 as u8];
+    let result = append_log(&mut storage, last_block_index, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 5);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state(
+        "create_add-log-0_append-log-0_append-log-0_append-log-0_append-log-0_append-log-0_append-log-0.hex",
+    );
+    assert_eq!(actual, expected);
+
+    // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with no traverse and end at new block
+    let log_0_data = vec![
+        8 as u8, 7 as u8, 6 as u8, 5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8,
+    ];
+    let result = append_log(&mut storage, last_block_index, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 6);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state(
+        "create_add-log-0_append-log-0_append-log-0_append-log-0_append-log-0_append-log-0_append-log-0_append-log-0.hex",
+    );
+    assert_eq!(actual, expected);
+
+    let log_0_last_block_lock = last_block_index;
+
+    // create log 1 - [1, 2, 3, 4, 5, 6, 7, 8]
+    let result = create_log(
+        &mut storage,
+        &vec![
+            1 as u8, 2 as u8, 3 as u8, 4 as u8, 5 as u8, 6 as u8, 7 as u8, 8 as u8,
+        ],
+    );
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    // (7, 7)
+    assert_eq!(first_block_index, 7);
+    assert_eq!(last_block_index, 7);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state("create_log-0-trail--create-log-1.hex");
+    assert_eq!(actual, expected);
+
+    let log_1_first_block_lock = first_block_index;
+
+    // append log 1 - [32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2]
+    let log_1_data = vec![
+        32 as u8, 31 as u8, 30 as u8, 29 as u8, 28 as u8, 27 as u8, 26 as u8, 25 as u8, 24 as u8,
+        23 as u8, 22 as u8, 21 as u8, 20 as u8, 19 as u8, 18 as u8, 17 as u8, 16 as u8, 15 as u8,
+        14 as u8, 13 as u8, 12 as u8, 11 as u8, 10 as u8, 9 as u8, 8 as u8, 7 as u8, 6 as u8,
+        5 as u8, 4 as u8, 3 as u8, 2 as u8,
+    ];
+    let result = append_log(&mut storage, last_block_index, &log_1_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 11);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state("create_log-0-trail--create-log-1_append-log-1.hex");
+    assert_eq!(actual, expected);
+
+    let log_1_last_block_lock = last_block_index;
+
+    // append log 0 - [1]
+    let log_0_data = vec![1 as u8];
+    let result = append_log(&mut storage, log_0_last_block_lock, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, log_0_last_block_lock);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state("create_log-0-trail--create-log-1_append-log-1_append-log-0.hex");
+    assert_eq!(actual, expected);
+
+    // append log 0 - [2, 1] - traverse from start
+    let log_0_data = vec![2 as u8, 1 as u8];
+    let result = append_log(&mut storage, log_0_first_block_index, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, log_0_last_block_lock);
+    let actual = read_full_file(tmp_file_path);
+    let expected =
+        fetch_state("create_log-0-trail--create-log-1_append-log-1_append-log-0_append-log-0.hex");
+    assert_eq!(actual, expected);
+
+    // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - traverse from start
+    let log_0_data = vec![
+        8 as u8, 7 as u8, 6 as u8, 5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8,
+    ];
+    let result = append_log(&mut storage, log_0_first_block_index, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 12);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state(
+        "create_log-0-trail--create-log-1_append-log-1_append-log-0_append-log-0_append-log-0.hex",
+    );
+    assert_eq!(actual, expected);
+
+    // append log 1 - [1] - traverse from start
+    let log_1_data = vec![5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8];
+    let result = append_log(&mut storage, log_1_first_block_lock, &log_1_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 13);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state(
+        "create_log-0-trail--create-log-1_append-log-1_append-log-0_append-log-0_append-log-0_append-log-1.hex",
+    );
+    assert_eq!(actual, expected);
+
+    // append log 1 - [32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2] - traverse from start
+    let log_1_data = vec![
+        32 as u8, 31 as u8, 30 as u8, 29 as u8, 28 as u8, 27 as u8, 26 as u8, 25 as u8, 24 as u8,
+        23 as u8, 22 as u8, 21 as u8, 20 as u8, 19 as u8, 18 as u8, 17 as u8, 16 as u8, 15 as u8,
+        14 as u8, 13 as u8, 12 as u8, 11 as u8, 10 as u8, 9 as u8, 8 as u8, 7 as u8, 6 as u8,
+        5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8,
+    ];
+    let result = append_log(&mut storage, log_1_last_block_lock, &log_1_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, 17);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state(
+        "create_log-0-trail--create-log-1_append-log-1_append-log-0_append-log-0_append-log-0_append-log-1_append-log-1.hex",
+    );
+    assert_eq!(actual, expected);
+
+    let log_1_last_block_lock = last_block_index;
+
+    // append log 1
+    let log_1_data = vec![2 as u8, 1 as u8];
+    let result = append_log(&mut storage, log_1_last_block_lock, &log_1_data);
+    assert_eq!(result.is_ok(), true);
+    let last_block_index = result.unwrap();
+    assert_eq!(last_block_index, log_1_last_block_lock);
+    let actual = read_full_file(tmp_file_path);
+    let expected = fetch_state(
+        "create_log-0-trail--create-log-1_append-log-1_append-log-0_append-log-0_append-log-0_append-log-1_append-log-1_append-log-1.hex",
+    );
+    assert_eq!(actual, expected);
+
+    remove_dir_contents(std::path::PathBuf::from(tmp_dir_path));
+}
 
 fn append_log_existing_storage() {}
 
