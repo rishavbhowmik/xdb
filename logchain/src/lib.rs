@@ -169,7 +169,7 @@ pub fn delete_log(
         let next_block_index = bytes_to_u32(&segment_payload[0..4]);
         if next_block_index == BlockIndex::MAX {
             // reached last block
-            let delete_result = storage.delete_block(next_block_index, hard_delete);
+            let delete_result = storage.delete_block(block_index_cache, hard_delete);
             if delete_result.is_err() {
                 return Err(Error {
                     code: 7,
@@ -179,7 +179,7 @@ pub fn delete_log(
                 return Ok((start_segment_block_index, block_index_cache));
             }
         } else {
-            let delete_result = storage.delete_block(next_block_index, hard_delete);
+            let delete_result = storage.delete_block(block_index_cache, hard_delete);
             if delete_result.is_err() {
                 return Err(Error {
                     code: 8,
