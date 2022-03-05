@@ -549,6 +549,97 @@ fn append_log_new_storage() {
 
 fn append_log_existing_storage() {}
 
-fn delete_log_new_storage() {}
+#[test]
+fn delete_log_new_storage() {
+    fn fetch_state(state_file: &str) -> Vec<u8> {
+        use std::path::PathBuf;
+        let path: PathBuf = ["tests/samples/delete_log_new_storage", state_file]
+            .iter()
+            .collect();
+        read_full_file(path.to_str().unwrap())
+    }
+    let tmp_dir_path = tempfile::tempdir().unwrap().into_path();
+    let tmp_file_path: std::path::PathBuf = [
+        tmp_dir_path.to_str().unwrap().to_string(),
+        String::from("delete_log_new_storage.hex"),
+    ]
+    .iter()
+    .collect();
+    let tmp_file_path = tmp_file_path.to_str().unwrap();
+    let block_len = 8;
+    let storage_result = Storage::new(String::from(tmp_file_path), block_len);
+    assert_eq!(storage_result.is_ok(), true);
+    let mut storage = storage_result.unwrap();
+    // write log 0
+    let log_0_data = vec![
+        1 as u8, 2 as u8, 3 as u8, 4 as u8, 5 as u8, 6 as u8, 7 as u8, 8 as u8, 9 as u8, 10 as u8,
+        11 as u8, 12 as u8, 13 as u8, 14 as u8, 15 as u8, 16 as u8,
+    ];
+    let result = create_log(&mut storage, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    // write log 1
+    let log_1_data = vec![
+        17 as u8, 18 as u8, 19 as u8, 20 as u8, 21 as u8, 22 as u8, 23 as u8, 24 as u8, 25 as u8,
+        26 as u8, 27 as u8, 28 as u8, 29 as u8, 30 as u8, 31 as u8, 32 as u8, 33 as u8, 34 as u8,
+        35 as u8, 36 as u8, 37 as u8, 38 as u8, 39 as u8, 40 as u8, 41 as u8, 42 as u8, 43 as u8,
+        44 as u8, 45 as u8, 46 as u8, 47 as u8, 48 as u8, 49 as u8, 50 as u8, 51 as u8, 52 as u8,
+    ];
+    let result = create_log(&mut storage, &log_1_data);
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    // (4, 12)
+    assert_eq!(first_block_index, 4);
+    assert_eq!(last_block_index, 12);
+    let first_block_index_l1 = first_block_index;
+    let last_block_index_l1 = last_block_index;
+    // write log 2
+    let log_2_data = vec![
+        53 as u8, 54 as u8, 55 as u8, 56 as u8, 57 as u8, 58 as u8, 59 as u8, 60 as u8, 61 as u8,
+        62 as u8, 63 as u8, 64 as u8, 65 as u8, 66 as u8, 67 as u8, 68 as u8, 69 as u8, 70 as u8,
+        71 as u8, 72 as u8, 73 as u8, 74 as u8, 75 as u8, 76 as u8, 77 as u8, 78 as u8, 79 as u8,
+        80 as u8, 81 as u8, 82 as u8, 83 as u8, 84 as u8, 85 as u8, 86 as u8, 87 as u8, 88 as u8,
+    ];
+    let result = create_log(&mut storage, &log_2_data);
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    // (13, 21)
+    assert_eq!(first_block_index, 13);
+    assert_eq!(last_block_index, 21);
+    let first_block_index_l2 = first_block_index;
+    let last_block_index_l2 = last_block_index;
+    // write log 3
+    let log_3_data = vec![
+        89 as u8, 90 as u8, 91 as u8, 92 as u8, 93 as u8, 94 as u8, 95 as u8, 96 as u8, 97 as u8,
+        98 as u8, 99 as u8, 100 as u8, 101 as u8, 102 as u8, 103 as u8, 104 as u8, 105 as u8,
+        106 as u8, 107 as u8, 108 as u8, 109 as u8, 110 as u8, 111 as u8, 112 as u8, 113 as u8,
+        114 as u8, 115 as u8, 116 as u8, 117 as u8, 118 as u8, 119 as u8, 120 as u8, 121 as u8,
+        122 as u8, 123 as u8, 124 as u8, 125 as u8, 126 as u8, 127 as u8, 128 as u8, 129 as u8,
+        130 as u8, 131 as u8, 132 as u8, 133 as u8, 134 as u8, 135 as u8, 136 as u8, 137 as u8,
+    ];
+    let result = create_log(&mut storage, &log_3_data);
+    assert_eq!(result.is_ok(), true);
+    let expected = fetch_state("4logs.hex");
+    let actual = read_full_file(tmp_file_path);
+    assert_eq!(actual, expected);
+    // delete log 1
+    let result = delete_log(&mut storage, first_block_index_l1, true);
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    assert_eq!(first_block_index, first_block_index_l1);
+    assert_eq!(last_block_index, last_block_index_l1);
+    let expected = fetch_state("4logs_del-log1.hex");
+    let actual = read_full_file(tmp_file_path);
+    assert_eq!(actual, expected);
+    // soft delete log 2
+    let result = delete_log(&mut storage, first_block_index_l2, false);
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    assert_eq!(first_block_index, first_block_index_l2);
+    assert_eq!(last_block_index, last_block_index_l2);
+    let expected = fetch_state("4logs_del-log1_del-log2.hex");
+    let actual = read_full_file(tmp_file_path);
+    assert_eq!(actual, expected);
+    remove_dir_contents(std::path::PathBuf::from(tmp_dir_path));
+}
 
 fn delete_log_existing_storage() {}
