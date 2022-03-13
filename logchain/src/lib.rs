@@ -191,6 +191,36 @@ pub fn delete_log(
     }
 }
 
+/// Read log from storage
+/// - Returns (first_block_index, last_block_index, log_data)
+/// - log_data is concatenation of all segments
+pub fn read_log(
+    storage: &mut Storage,
+    start_segment_block_index: BlockIndex,
+) -> Result<(BlockIndex, BlockIndex, Vec<u8>), Error> {
+    let mut block_index_cache = start_segment_block_index;
+    let mut log_data = vec![];
+    loop {
+        let result = storage.read_block(block_index_cache);
+        if result.is_err() {
+            return Err(Error {
+                code: 9,
+                message: "Failed to read log".to_string(),
+            });
+        }
+        let (_, segment_payload) = result.unwrap();
+        let next_block_index = bytes_to_u32(&segment_payload[0..4]);
+        if next_block_index == BlockIndex::MAX {
+            // reached last block
+            log_data.extend_from_slice(&segment_payload[4..]);
+            return Ok((start_segment_block_index, block_index_cache, log_data));
+        } else {
+            log_data.extend_from_slice(&segment_payload[4..]);
+            block_index_cache = next_block_index;
+        }
+    }
+}
+
 // unit tests
 #[cfg(test)]
 mod tests {

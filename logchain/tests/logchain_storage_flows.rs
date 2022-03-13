@@ -1,4 +1,4 @@
-use logchain::{append_log, create_log, delete_log, make_segment_payload_list};
+use logchain::{append_log, create_log, delete_log, make_segment_payload_list, read_log};
 use storage::{BlockIndex, Storage};
 
 fn read_full_file(file_name: &str) -> Vec<u8> {
@@ -643,3 +643,184 @@ fn delete_log_new_storage() {
 }
 
 fn delete_log_existing_storage() {}
+
+#[test]
+fn read_log_new_storage() {
+    // let tmp_file_path = "./tmp/read_log_new_storage.hex";
+    let tmp_dir_path = tempfile::tempdir().unwrap().into_path();
+    let tmp_file_path: std::path::PathBuf = [
+        tmp_dir_path.to_str().unwrap().to_string(),
+        String::from("read_log_new_storage.hex"),
+    ]
+    .iter()
+    .collect();
+    let tmp_file_path = tmp_file_path.to_str().unwrap();
+
+    // create new storage
+    let block_len = 8;
+    let storage_result = Storage::new(String::from(tmp_file_path), block_len);
+    assert_eq!(storage_result.is_ok(), true);
+    let mut storage = storage_result.unwrap();
+
+    // add logs to storage
+    // - log 0
+    let log_0_data = vec![
+        1 as u8, 2 as u8, 3 as u8, 4 as u8, 5 as u8, 6 as u8, 7 as u8, 8 as u8, 9 as u8, 10 as u8,
+        11 as u8, 12 as u8, 13 as u8, 14 as u8, 15 as u8, 16 as u8,
+    ];
+    let result = create_log(&mut storage, &log_0_data);
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    let log_0_first_block_index = first_block_index;
+    let log_0_last_block_index = last_block_index;
+    {
+        // test read_block for block_0
+        let result = read_log(&mut storage, log_0_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_0_first_block_index);
+        assert_eq!(last_block_index, log_0_last_block_index);
+        assert_eq!(log_data, log_0_data);
+    }
+    // - log 1
+    let log_1_data = vec![
+        17 as u8, 18 as u8, 19 as u8, 20 as u8, 21 as u8, 22 as u8, 23 as u8, 24 as u8, 25 as u8,
+        26 as u8, 27 as u8, 28 as u8, 29 as u8, 30 as u8, 31 as u8, 32 as u8, 33 as u8, 34 as u8,
+        35 as u8, 36 as u8, 37 as u8, 38 as u8, 39 as u8, 40 as u8, 41 as u8, 42 as u8, 43 as u8,
+        44 as u8, 45 as u8, 46 as u8, 47 as u8, 48 as u8, 49 as u8, 50 as u8, 51 as u8, 52 as u8,
+    ];
+    let result = create_log(&mut storage, &log_1_data);
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    let log_1_first_block_index = first_block_index;
+    let log_1_last_block_index = last_block_index;
+    {
+        // test read_block for block_1
+        let result = read_log(&mut storage, log_1_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_1_first_block_index);
+        assert_eq!(last_block_index, log_1_last_block_index);
+        assert_eq!(log_data, log_1_data);
+    }
+    // - log 2
+    let log_2_data = vec![
+        53 as u8, 54 as u8, 55 as u8, 56 as u8, 57 as u8, 58 as u8, 59 as u8, 60 as u8, 61 as u8,
+        62 as u8, 63 as u8, 64 as u8, 65 as u8, 66 as u8, 67 as u8, 68 as u8, 69 as u8, 70 as u8,
+        71 as u8, 72 as u8, 73 as u8, 74 as u8, 75 as u8, 76 as u8, 77 as u8, 78 as u8, 79 as u8,
+        80 as u8, 81 as u8, 82 as u8, 83 as u8, 84 as u8, 85 as u8, 86 as u8, 87 as u8, 88 as u8,
+        89 as u8, 90 as u8, 91 as u8, 92 as u8, 93 as u8, 94 as u8, 95 as u8, 96 as u8, 97 as u8,
+        98 as u8, 99 as u8, 100 as u8,
+    ];
+    let result = create_log(&mut storage, &log_2_data);
+    assert_eq!(result.is_ok(), true);
+    let (first_block_index, last_block_index) = result.unwrap();
+    let log_2_first_block_index = first_block_index;
+    let log_2_last_block_index = last_block_index;
+    {
+        // test read_block for block_2
+        let result = read_log(&mut storage, log_2_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_2_first_block_index);
+        assert_eq!(last_block_index, log_2_last_block_index);
+        assert_eq!(log_data, log_2_data);
+    }
+    {
+        // test read_block for block_0
+        let result = read_log(&mut storage, log_0_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_0_first_block_index);
+        assert_eq!(last_block_index, log_0_last_block_index);
+        assert_eq!(log_data, log_0_data);
+    }
+    {
+        // test read_block for block_1
+        let result = read_log(&mut storage, log_1_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_1_first_block_index);
+        assert_eq!(last_block_index, log_1_last_block_index);
+        assert_eq!(log_data, log_1_data);
+    }
+    // append logs in storage
+    // - log 0
+    let log_0_append_data = vec![
+        8 as u8, 7 as u8, 6 as u8, 5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8,
+    ];
+    let result = append_log(&mut storage, log_0_first_block_index, &log_0_append_data);
+    assert_eq!(result.is_ok(), true);
+    let log_0_last_block_index = result.unwrap();
+    let mut log_0_data = log_0_data;
+    log_0_data.extend_from_slice(&log_0_append_data);
+    {
+        // test read_block for block_0
+        let result = read_log(&mut storage, log_0_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_0_first_block_index);
+        assert_eq!(last_block_index, log_0_last_block_index);
+        assert_eq!(log_data, log_0_data);
+    }
+    // - log 1
+    let log_1_append_data = vec![
+        16 as u8, 15 as u8, 14 as u8, 13 as u8, 12 as u8, 11 as u8, 10 as u8, 9 as u8, 8 as u8,
+        7 as u8, 6 as u8, 5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8,
+    ];
+    let result = append_log(&mut storage, log_1_first_block_index, &log_1_append_data);
+    assert_eq!(result.is_ok(), true);
+    let log_1_last_block_index = result.unwrap();
+    let mut log_1_data = log_1_data;
+    log_1_data.extend_from_slice(&log_1_append_data);
+    {
+        // test read_block for block_1
+        let result = read_log(&mut storage, log_1_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_1_first_block_index);
+        assert_eq!(last_block_index, log_1_last_block_index);
+        assert_eq!(log_data, log_1_data);
+    }
+    // - log 2
+    let log_2_append_data = vec![
+        35 as u8, 34 as u8, 33 as u8, 32 as u8, 31 as u8, 30 as u8, 29 as u8, 28 as u8, 27 as u8,
+        26 as u8, 25 as u8, 24 as u8, 23 as u8, 22 as u8, 21 as u8, 20 as u8, 19 as u8, 18 as u8,
+        17 as u8, 16 as u8, 15 as u8, 14 as u8, 13 as u8, 12 as u8, 11 as u8, 10 as u8, 9 as u8,
+        8 as u8, 7 as u8, 6 as u8, 5 as u8, 4 as u8, 3 as u8, 2 as u8, 1 as u8,
+    ];
+    let result = append_log(&mut storage, log_2_first_block_index, &log_2_append_data);
+    assert_eq!(result.is_ok(), true);
+    let log_2_last_block_index = result.unwrap();
+    let mut log_2_data = log_2_data;
+    log_2_data.extend_from_slice(&log_2_append_data);
+    {
+        // test read_block for block_2
+        let result = read_log(&mut storage, log_2_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_2_first_block_index);
+        assert_eq!(last_block_index, log_2_last_block_index);
+        assert_eq!(log_data, log_2_data);
+    }
+    {
+        // test read_block for block_0
+        let result = read_log(&mut storage, log_0_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_0_first_block_index);
+        assert_eq!(last_block_index, log_0_last_block_index);
+        assert_eq!(log_data, log_0_data);
+    }
+    {
+        // test read_block for block_1
+        let result = read_log(&mut storage, log_1_first_block_index);
+        assert_eq!(result.is_ok(), true);
+        let (first_block_index, last_block_index, log_data) = result.unwrap();
+        assert_eq!(first_block_index, log_1_first_block_index);
+        assert_eq!(last_block_index, log_1_last_block_index);
+        assert_eq!(log_data, log_1_data);
+    }
+
+    remove_dir_contents(std::path::PathBuf::from(tmp_dir_path));
+}
