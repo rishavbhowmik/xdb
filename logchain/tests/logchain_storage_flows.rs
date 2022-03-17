@@ -266,7 +266,7 @@ fn create_log_existing_storage() {
     std::fs::copy(src_path, tmp_file_path.clone()).unwrap();
     let mut storage = Storage::open(String::from(tmp_file_path)).unwrap();
     let block_len = storage.block_len();
-    let actual = read_full_file(tmp_file_path);
+    assert_eq!(block_len, 8);
 
     // write log 0
     let log_0_data = vec![

@@ -1,21 +1,9 @@
-use storage::{BlockIndex, Storage, BLOCK_HEADER_SIZE};
-use util::{bytes_to_u32, u32_to_bytes, Error};
+use storage::{BlockIndex, Storage};
+use util::{bytes_to_u32, make_chunks, u32_to_bytes, Error};
 
 const BLOCK_INDEX_SIZE: usize = std::mem::size_of::<BlockIndex>();
 
-/// Returns (blocks_required, chunks)
-fn make_chunks(data: &[u8], chunk_len: usize) -> (usize, std::slice::Chunks<u8>) {
-    let chunks = data.chunks(chunk_len);
-    let blocks_required = data.len() / chunk_len as usize
-        + if (data.len() % chunk_len as usize) > 0 {
-            1 as usize
-        } else {
-            0 as usize
-        }; // same as chunks.clone().count()
-    (blocks_required, chunks)
-}
-
-/// Returns (Vector(next_block_index, data_chunk), first_block_index, last_block_index)
+/// Returns (Vector<(next_block_index, data_chunk)>, first_block_index, last_block_index)
 pub fn make_segment_payload_list(
     storage: &Storage,
     data: &[u8],
@@ -218,57 +206,5 @@ pub fn read_log(
             log_data.extend_from_slice(&segment_payload[4..]);
             block_index_cache = next_block_index;
         }
-    }
-}
-
-// unit tests
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_make_chunks() {
-        let data: [u8; 16] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-        let chunk_size = 10;
-        let (blocks_required, mut chunks) = make_chunks(&data, chunk_size);
-        assert_eq!(blocks_required, 2);
-        assert_eq!(chunks.clone().count(), 2);
-        assert_eq!(chunks.next().unwrap(), &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-        assert_eq!(chunks.next().unwrap(), &[11, 12, 13, 14, 15, 16]);
-        assert_eq!(chunks.next(), None);
-
-        let data: [u8; 0] = [];
-        let chunk_size = 1;
-        let (blocks_required, mut chunks) = make_chunks(&data, chunk_size);
-        assert_eq!(blocks_required, 0);
-        assert_eq!(chunks.clone().count(), 0);
-        assert_eq!(chunks.next(), None);
-
-        let data: [u8; 1] = [1];
-        let chunk_size = 1;
-        let (blocks_required, mut chunks) = make_chunks(&data, chunk_size);
-        assert_eq!(blocks_required, 1);
-        assert_eq!(chunks.clone().count(), 1);
-        assert_eq!(chunks.next().unwrap(), &[1]);
-        assert_eq!(chunks.next(), None);
-
-        let data: [u8; 2] = [1, 2];
-        let chunk_size = 1;
-        let (blocks_required, mut chunks) = make_chunks(&data, chunk_size);
-        assert_eq!(blocks_required, 2);
-        assert_eq!(chunks.clone().count(), 2);
-        assert_eq!(chunks.next().unwrap(), &[1]);
-        assert_eq!(chunks.next().unwrap(), &[2]);
-        assert_eq!(chunks.next(), None);
-
-        let data: [u8; 3] = [1, 2, 3];
-        let chunk_size = 1;
-        let (blocks_required, mut chunks) = make_chunks(&data, chunk_size);
-        assert_eq!(blocks_required, 3);
-        assert_eq!(chunks.clone().count(), 3);
-        assert_eq!(chunks.next().unwrap(), &[1]);
-        assert_eq!(chunks.next().unwrap(), &[2]);
-        assert_eq!(chunks.next().unwrap(), &[3]);
-        assert_eq!(chunks.next(), None);
     }
 }
