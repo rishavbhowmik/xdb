@@ -3,6 +3,9 @@ use util::{bytes_to_u32, make_chunks, u32_to_bytes, Error};
 
 const BLOCK_INDEX_SIZE: usize = std::mem::size_of::<BlockIndex>();
 
+/// Value of next block index in last block of the chain.
+const LAST_NEXT_BLOCK_INDEX: BlockIndex = BlockIndex::MAX;
+
 /// Returns (Vector<(next_block_index, data_chunk)>, first_block_index, last_block_index)
 pub fn make_segment_payload_list(
     storage: &Storage,
@@ -27,7 +30,7 @@ pub fn make_segment_payload_list(
                     &u32_to_bytes(if block_index < block_indexes.len() - 1 {
                         block_indexes[block_index + 1]
                     } else {
-                        BlockIndex::MAX // for last block
+                        LAST_NEXT_BLOCK_INDEX // for last block
                     }),
                     data_chunk,
                 ]
@@ -82,7 +85,9 @@ pub fn append_log(
         }
         let (_, segment_payload) = result.unwrap();
         let next_block_index = bytes_to_u32(&segment_payload[0..4]);
-        if next_block_index == BlockIndex::MAX {
+        if next_block_index != LAST_NEXT_BLOCK_INDEX {
+            last_block_index = next_block_index;
+        } else {
             // reached last block
             let existing_last_block_void_size =
                 storage.block_len() as usize - segment_payload.len();
@@ -91,7 +96,7 @@ pub fn append_log(
                 if (data.len() as isize - existing_last_block_void_size as isize) > 0 {
                     make_segment_payload_list(storage, &data[existing_last_block_void_size..])
                 } else {
-                    Ok((vec![], BlockIndex::MAX, last_block_index))
+                    Ok((vec![], LAST_NEXT_BLOCK_INDEX, last_block_index))
                 };
             if payload_list_result.is_err() {
                 return Err(payload_list_result.unwrap_err());
@@ -131,8 +136,6 @@ pub fn append_log(
                 }
             }
             return Ok(new_last_block_index);
-        } else {
-            last_block_index = next_block_index;
         }
     }
 }
@@ -155,17 +158,17 @@ pub fn delete_log(
         }
         let (_, segment_payload) = result.unwrap();
         let next_block_index = bytes_to_u32(&segment_payload[0..4]);
-        if next_block_index == BlockIndex::MAX {
-            // reached last block
-            let delete_result = storage.delete_block(block_index_cache, hard_delete);
-            if delete_result.is_err() {
-                return Err(Error {
-                    code: 7,
-                    message: "Failed to delete log".to_string(),
-                });
-            } else {
-                return Ok((start_segment_block_index, block_index_cache));
-            }
+        // delete block
+        let delete_result = storage.delete_block(block_index_cache, hard_delete);
+        if delete_result.is_err() {
+            return Err(Error {
+                code: 7,
+                message: "Failed to delete log".to_string(),
+            });
+        }
+        // check if reached last block
+        if next_block_index != LAST_NEXT_BLOCK_INDEX {
+            block_index_cache = next_block_index;
         } else {
             let delete_result = storage.delete_block(block_index_cache, hard_delete);
             if delete_result.is_err() {
@@ -173,8 +176,9 @@ pub fn delete_log(
                     code: 8,
                     message: "Failed to delete log".to_string(),
                 });
+            } else {
+                return Ok((start_segment_block_index, block_index_cache));
             }
-            block_index_cache = next_block_index;
         }
     }
 }
@@ -198,13 +202,11 @@ pub fn read_log(
         }
         let (_, segment_payload) = result.unwrap();
         let next_block_index = bytes_to_u32(&segment_payload[0..4]);
-        if next_block_index == BlockIndex::MAX {
-            // reached last block
-            log_data.extend_from_slice(&segment_payload[4..]);
-            return Ok((start_segment_block_index, block_index_cache, log_data));
-        } else {
-            log_data.extend_from_slice(&segment_payload[4..]);
+        log_data.extend_from_slice(&segment_payload[4..]);
+        if next_block_index != LAST_NEXT_BLOCK_INDEX {
             block_index_cache = next_block_index;
+        } else {
+            return Ok((start_segment_block_index, block_index_cache, log_data));
         }
     }
 }
