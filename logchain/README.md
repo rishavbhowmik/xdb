@@ -12,7 +12,6 @@ Each segment is stored along with `next_segment_index` as the block data of stor
 
 In order to traverse the log, index of **head segment** of the log must be provided.
 
-
 ### File structure logchain based storage file.
 
 ```
@@ -46,13 +45,14 @@ In order to traverse the log, index of **head segment** of the log must be provi
 
 ### Operations
 
-1. Create/Append a log
-2. Read a log
-3. Delete a log
+1. Create a log
+2. Append a log
+3. Read a log
+4. Delete a log
 
 ## Usage for xdb
 
-*using mongodb's naming convention to explain*
+_using mongodb's naming convention to explain_
 
 Logs are requied to implement document storage and index mapping storage.
 

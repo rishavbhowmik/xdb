@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/rishavbhowmik/xdb/badge.svg?branch=master)](https://coveralls.io/github/rishavbhowmik/xdb?branch=master)
+
 # What is XDB?
 
 Hopefully a graph based Database with a very fast storage engine without wearing out the disk.
