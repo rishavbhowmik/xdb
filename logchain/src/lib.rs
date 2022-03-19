@@ -1,10 +1,10 @@
 use storage::{BlockIndex, Storage};
-use util::{bytes_to_u32, make_chunks, u32_to_bytes, Error};
+use util::{make_chunks, Error};
 
-const BLOCK_INDEX_SIZE: usize = std::mem::size_of::<BlockIndex>();
-
-/// Value of next block index in last block of the chain.
-const LAST_NEXT_BLOCK_INDEX: BlockIndex = BlockIndex::MAX;
+mod segment_block_index;
+use segment_block_index::{
+    block_index_from_buffer, block_index_to_buffer, BLOCK_INDEX_SIZE, LAST_NEXT_BLOCK_INDEX,
+};
 
 /// Returns (Vector<(next_block_index, data_chunk)>, first_block_index, last_block_index)
 pub fn make_segment_payload_list(
@@ -25,14 +25,14 @@ pub fn make_segment_payload_list(
         .enumerate()
         .map(|(block_index, data_chunk)| {
             (
-                block_indexes[block_index],
+                block_indexes[block_index], // block_index to store segment
                 [
-                    &u32_to_bytes(if block_index < block_indexes.len() - 1 {
+                    &block_index_to_buffer(if block_index < block_indexes.len() - 1 {
                         block_indexes[block_index + 1]
                     } else {
-                        LAST_NEXT_BLOCK_INDEX // for last block
-                    }),
-                    data_chunk,
+                        LAST_NEXT_BLOCK_INDEX
+                    }), // next block index
+                    data_chunk, // segment payload
                 ]
                 .concat(),
             )
@@ -84,7 +84,13 @@ pub fn append_log(
             });
         }
         let (_, segment_payload) = result.unwrap();
-        let next_block_index = bytes_to_u32(&segment_payload[0..4]);
+        // parse next block index
+        let next_block_index_result = block_index_from_buffer(&segment_payload);
+        if next_block_index_result.is_err() {
+            return Err(next_block_index_result.unwrap_err());
+        }
+        let next_block_index = next_block_index_result.unwrap();
+        // check if last block
         if next_block_index != LAST_NEXT_BLOCK_INDEX {
             last_block_index = next_block_index;
         } else {
@@ -105,7 +111,7 @@ pub fn append_log(
                 payload_list_result.unwrap();
             // - update next_block_index of existing last segment
             let existing_last_segment_new_block_data = [
-                &u32_to_bytes(new_next_block_index),
+                &block_index_to_buffer(new_next_block_index),
                 &segment_payload[4..],
                 &data[0..(if existing_last_block_void_size == 0 {
                     0 as usize
@@ -157,7 +163,11 @@ pub fn delete_log(
             });
         }
         let (_, segment_payload) = result.unwrap();
-        let next_block_index = bytes_to_u32(&segment_payload[0..4]);
+        let next_block_index_result = block_index_from_buffer(&segment_payload);
+        if next_block_index_result.is_err() {
+            return Err(next_block_index_result.unwrap_err());
+        }
+        let next_block_index = next_block_index_result.unwrap();
         // delete block
         let delete_result = storage.delete_block(block_index_cache, hard_delete);
         if delete_result.is_err() {
@@ -201,7 +211,11 @@ pub fn read_log(
             });
         }
         let (_, segment_payload) = result.unwrap();
-        let next_block_index = bytes_to_u32(&segment_payload[0..4]);
+        let next_block_index_result = block_index_from_buffer(&segment_payload);
+        if next_block_index_result.is_err() {
+            return Err(next_block_index_result.unwrap_err());
+        }
+        let next_block_index = next_block_index_result.unwrap();
         log_data.extend_from_slice(&segment_payload[4..]);
         if next_block_index != LAST_NEXT_BLOCK_INDEX {
             block_index_cache = next_block_index;
