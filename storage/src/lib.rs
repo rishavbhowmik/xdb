@@ -1,4 +1,4 @@
-use util::{bytes_to_u32, u32_to_bytes, Error};
+use util::Error;
 
 /// 4 bytes for index for a block
 pub type BlockIndex = u32;
@@ -19,12 +19,12 @@ impl StorageHeader {
     fn new(block_len: BlockLength) -> Self {
         StorageHeader { block_len }
     }
-    fn from_bytes(bytes: &[u8; STORAGE_HEADER_SIZE]) -> StorageHeader {
-        let block_len = bytes_to_u32(bytes);
+    fn from_bytes(bytes: [u8; STORAGE_HEADER_SIZE]) -> StorageHeader {
+        let block_len = BlockLength::from_le_bytes(bytes);
         StorageHeader { block_len }
     }
     fn to_bytes(&self) -> [u8; STORAGE_HEADER_SIZE] {
-        u32_to_bytes(self.block_len)
+        BlockLength::to_le_bytes(self.block_len)
     }
 }
 
@@ -39,7 +39,7 @@ mod unit_tests_storage_header {
     }
     #[test]
     fn test_storage_header_from_bytes() {
-        let storage_header = StorageHeader::from_bytes(&[0, 2, 0, 2]);
+        let storage_header = StorageHeader::from_bytes([0, 2, 0, 2]);
         assert_eq!(storage_header.block_len, 33554944);
     }
     #[test]
@@ -50,7 +50,7 @@ mod unit_tests_storage_header {
         assert_eq!(storage_header.block_len, block_length);
         let bytes = storage_header.to_bytes();
         assert_eq!(bytes, expected_bytes);
-        let storage_header = StorageHeader::from_bytes(&bytes);
+        let storage_header = StorageHeader::from_bytes(bytes);
         assert_eq!(storage_header.block_len, block_length);
     }
 }
@@ -73,14 +73,14 @@ impl BlockHeader {
             block_data_size: block_data_size,
         }
     }
-    fn from_bytes(bytes: &[u8; BLOCK_HEADER_SIZE]) -> BlockHeader {
-        let block_data_size = bytes_to_u32(bytes);
+    fn from_bytes(bytes: [u8; BLOCK_HEADER_SIZE]) -> BlockHeader {
+        let block_data_size = BlockLength::from_le_bytes(bytes);
         BlockHeader {
             block_data_size: block_data_size,
         }
     }
     fn to_bytes(&self) -> [u8; BLOCK_HEADER_SIZE] {
-        u32_to_bytes(self.block_data_size)
+        BlockLength::to_le_bytes(self.block_data_size)
     }
 }
 
@@ -95,7 +95,7 @@ mod unit_test_block_header {
     }
     #[test]
     fn test_block_header_from_bytes() {
-        let block_header = BlockHeader::from_bytes(&[0, 2, 0, 2]);
+        let block_header = BlockHeader::from_bytes([0, 2, 0, 2]);
         assert_eq!(block_header.block_data_size, 33554944);
     }
     #[test]
@@ -106,7 +106,7 @@ mod unit_test_block_header {
         assert_eq!(block_header.block_data_size, block_data_size);
         let bytes = block_header.to_bytes();
         assert_eq!(bytes, expected_bytes);
-        let block_header = BlockHeader::from_bytes(&bytes);
+        let block_header = BlockHeader::from_bytes(bytes);
         assert_eq!(block_header.block_data_size, block_data_size);
     }
 }
@@ -355,7 +355,7 @@ impl Storage {
         // -- update read pointer
         self.read_pointer += read_size;
         // - parse storage header
-        let storage_header = StorageHeader::from_bytes(&header_bytes);
+        let storage_header = StorageHeader::from_bytes(header_bytes);
         // - copy storage header to storage object
         self.header = storage_header;
         // - return read pointer
@@ -418,7 +418,7 @@ impl Storage {
             // -- update read pointer
             self.read_pointer += read_size;
             // -- parse block header
-            let block_header = BlockHeader::from_bytes(&block_header_bytes);
+            let block_header = BlockHeader::from_bytes(block_header_bytes);
             // - check if block is free
             if block_header.block_data_size == 0 {
                 // -- add block to free blocks
@@ -497,7 +497,7 @@ impl Storage {
             });
         }
         self.read_pointer += read_size;
-        let block_header = BlockHeader::new(bytes_to_u32(block_data_size_bytes));
+        let block_header = BlockHeader::from_bytes(*block_data_size_bytes);
         // - read block data to vec
         let mut block_data = vec![0u8; block_header.block_data_size as usize];
         let read_result = self.file_reader.read(&mut block_data[..]);
@@ -682,7 +682,6 @@ impl Storage {
             .free_blocks
             .iter()
             .cloned()
-            .map(|x| x as BlockIndex)
             .collect::<Vec<BlockIndex>>();
         available_free_blocks.truncate(count as usize);
         available_free_blocks.sort();
