@@ -15,6 +15,7 @@ impl fmt::Debug for Error {
 }
 
 /// convert 4 bytes unsinged integer little endian bytes array
+/// @deprecated - use u32::to_le_bytes()
 pub fn u32_to_bytes(n: u32) -> ([u8; 4]) {
     // block_size is in bytes as little endian
     let mut bytes = [0u8; 4];
@@ -26,6 +27,7 @@ pub fn u32_to_bytes(n: u32) -> ([u8; 4]) {
 }
 
 /// convert little endian bytes array to 4 bytes unsinged integer
+/// @deprecated - use u32::from_le_bytes()
 pub fn bytes_to_u32(bytes: &[u8]) -> u32 {
     let mut n: u32 = 0;
     n |= (bytes[0] as u32) << 0;
