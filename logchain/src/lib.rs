@@ -1,5 +1,8 @@
 use storage::{BlockIndex, Storage};
-use util::{make_chunks, Error};
+use util::error::Error;
+use util::make_chunks;
+
+mod logchain_errors;
 
 mod segment_block_index;
 use segment_block_index::{
@@ -16,10 +19,9 @@ pub fn make_segment_payload_list(
     let (blocks_required, chunks) = make_chunks(data, chunk_len);
     let block_indexes = storage.search_block_allocation_indexes(blocks_required as BlockIndex);
     if block_indexes.len() < blocks_required {
-        return Err(Error {
-            code: 1,
-            message: "Not enough space for log".to_string(),
-        });
+        return Err(
+            logchain_errors::make_segment_payload_list_insufficient_blocks(blocks_required),
+        );
     }
     let segment_payloads = chunks
         .enumerate()
@@ -55,10 +57,7 @@ pub fn create_log(storage: &mut Storage, data: &[u8]) -> Result<(BlockIndex, Blo
     for (block_index, segment_payload) in payload_list.iter() {
         let result = storage.write_block(*block_index, segment_payload);
         if result.is_err() {
-            return Err(Error {
-                code: 2,
-                message: "Failed to write log".to_string(),
-            });
+            return Err(result.unwrap_err());
         }
     }
     Ok((first_block_index, last_block_index))
@@ -78,10 +77,7 @@ pub fn append_log(
     loop {
         let result = storage.read_block(last_block_index);
         if result.is_err() {
-            return Err(Error {
-                code: 3,
-                message: "Failed to read log".to_string(),
-            });
+            return Err(result.unwrap_err());
         }
         let (_, segment_payload) = result.unwrap();
         // parse next block index
@@ -126,19 +122,13 @@ pub fn append_log(
             let write_result =
                 storage.write_block(last_block_index, &existing_last_segment_new_block_data);
             if write_result.is_err() {
-                return Err(Error {
-                    code: 4,
-                    message: "Failed to write log".to_string(),
-                });
+                return Err(write_result.unwrap_err());
             }
             // - write new blocks
             for (block_index, segment_payload) in payload_list.iter() {
                 let write_result = storage.write_block(*block_index, segment_payload);
                 if write_result.is_err() {
-                    return Err(Error {
-                        code: 5,
-                        message: "Failed to write log".to_string(),
-                    });
+                    return Err(write_result.unwrap_err());
                 }
             }
             return Ok(new_last_block_index);
@@ -157,10 +147,7 @@ pub fn delete_log(
     loop {
         let result = storage.read_block(block_index_cache);
         if result.is_err() {
-            return Err(Error {
-                code: 6,
-                message: "Failed to read log".to_string(),
-            });
+            return Err(result.unwrap_err());
         }
         let (_, segment_payload) = result.unwrap();
         let next_block_index_result = block_index_from_buffer(&segment_payload);
@@ -171,10 +158,7 @@ pub fn delete_log(
         // delete block
         let delete_result = storage.delete_block(block_index_cache, hard_delete);
         if delete_result.is_err() {
-            return Err(Error {
-                code: 7,
-                message: "Failed to delete log".to_string(),
-            });
+            return Err(delete_result.unwrap_err());
         }
         // check if reached last block
         if next_block_index != LAST_NEXT_BLOCK_INDEX {
@@ -182,10 +166,7 @@ pub fn delete_log(
         } else {
             let delete_result = storage.delete_block(block_index_cache, hard_delete);
             if delete_result.is_err() {
-                return Err(Error {
-                    code: 8,
-                    message: "Failed to delete log".to_string(),
-                });
+                return Err(delete_result.unwrap_err());
             } else {
                 return Ok((start_segment_block_index, block_index_cache));
             }
@@ -205,10 +186,7 @@ pub fn read_log(
     loop {
         let result = storage.read_block(block_index_cache);
         if result.is_err() {
-            return Err(Error {
-                code: 9,
-                message: "Failed to read log".to_string(),
-            });
+            return Err(result.unwrap_err());
         }
         let (_, segment_payload) = result.unwrap();
         let next_block_index_result = block_index_from_buffer(&segment_payload);

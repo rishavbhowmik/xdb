@@ -1,4 +1,5 @@
-use util::Error;
+use util::error::Error;
+mod storage_errors;
 
 /// 4 bytes for index for a block
 pub type BlockIndex = u32;
@@ -153,10 +154,9 @@ impl Storage {
             .create(true)
             .open(file_path_clone);
         if file_writer_result.is_err() {
-            return Err(Error {
-                code: 1,
-                message: "Could not create file".to_string(),
-            });
+            return Err(storage_errors::open_file_writer_open_file(
+                file_writer_result.unwrap_err(),
+            ));
         }
         let file_writer = file_writer_result.unwrap();
         let write_pointer = 0 as usize;
@@ -168,10 +168,9 @@ impl Storage {
         let file_path_clone = file_path.clone();
         let file_reader_result = OpenOptions::new().read(true).open(file_path_clone);
         if file_reader_result.is_err() {
-            return Err(Error {
-                code: 1,
-                message: "Could not open file".to_string(),
-            });
+            return Err(storage_errors::open_file_reader_open_file(
+                file_reader_result.unwrap_err(),
+            ));
         }
         let file_reader = file_reader_result.unwrap();
         let read_pointer = 0 as usize;
@@ -206,10 +205,7 @@ impl Storage {
             read_pointer,
         };
         if storage.set_storage_header().is_err() {
-            return Err(Error {
-                code: 2,
-                message: "Could not init storage".to_string(),
-            });
+            return Err(storage.set_storage_header().unwrap_err());
         }
         Ok(storage)
     }
@@ -240,10 +236,7 @@ impl Storage {
         };
         // - read and update storage header from file
         if storage.get_storage_header().is_err() {
-            return Err(Error {
-                code: 2,
-                message: "Could not init storage".to_string(),
-            });
+            return Err(storage.get_storage_header().unwrap_err());
         }
         // - read file and count
         // -- total blocks - update self.end_block_count
@@ -293,27 +286,24 @@ impl Storage {
         // -- seek writer pointer to beginning of file
         let ptr_seek_result = file.seek(std::io::SeekFrom::Start(0));
         if ptr_seek_result.is_err() {
-            return Err(Error {
-                code: 3,
-                message: "Could not seek file pointer".to_string(),
-            });
+            return Err(storage_errors::set_storage_header_seek_start(
+                ptr_seek_result.unwrap_err(),
+            ));
         }
         // -- write storage header
         self.write_pointer = ptr_seek_result.unwrap() as usize;
         let write_result = file.write(&header_bytes);
         if write_result.is_err() {
-            return Err(Error {
-                code: 2,
-                message: "Could not write to file".to_string(),
-            });
+            return Err(storage_errors::set_storage_header_write_header(
+                write_result.unwrap_err(),
+            ));
         }
         // -- verify write operation was successful
         let write_size = write_result.unwrap();
         if write_size != STORAGE_HEADER_SIZE {
-            return Err(Error {
-                code: 2,
-                message: "Could not write all header bytes to file".to_string(),
-            });
+            return Err(storage_errors::set_storage_header_write_header_success(
+                write_size,
+            ));
         }
         self.write_pointer += write_size;
         Ok(self.write_pointer)
@@ -329,28 +319,25 @@ impl Storage {
         // -- seek reader pointer to beginning of file
         let ptr_seek_result = file.seek(std::io::SeekFrom::Start(0));
         if ptr_seek_result.is_err() {
-            return Err(Error {
-                code: 3,
-                message: "Could not seek file pointer".to_string(),
-            });
+            return Err(storage_errors::get_storage_header_seek_start(
+                ptr_seek_result.unwrap_err(),
+            ));
         }
         // -- read storage header
         let mut header_bytes = [0u8; STORAGE_HEADER_SIZE];
         self.read_pointer = ptr_seek_result.unwrap() as usize;
         let read_result = file.read(&mut header_bytes);
         if read_result.is_err() {
-            return Err(Error {
-                code: 2,
-                message: "Could not read from file".to_string(),
-            });
+            return Err(storage_errors::get_storage_header_read_header(
+                read_result.unwrap_err(),
+            ));
         }
         // -- verify read operation was successful
         let read_size = read_result.unwrap();
         if read_size != STORAGE_HEADER_SIZE as usize {
-            return Err(Error {
-                code: 2,
-                message: "Could not read all header bytes from file".to_string(),
-            });
+            return Err(storage_errors::get_storage_header_read_header_success(
+                read_size,
+            ));
         }
         // -- update read pointer
         self.read_pointer += read_size;
@@ -362,33 +349,24 @@ impl Storage {
         Ok(read_size)
     }
     /// Count number of blocks in storage file
-    /// -- total blocks - update self.end_block_count
-    /// -- free blocks - update self.free_blocks
+    /// - update self.end_block_count
+    /// - update self.free_blocks
     /// - returns: read pointer
     fn read_storage_block_headers(&mut self) -> Result<usize, Error> {
         use std::io::prelude::*;
         let file = &mut self.file_reader;
-        // - seek reader pointer to end of file
-        let ptr_seek_result = file.seek(std::io::SeekFrom::Start(0));
-        if ptr_seek_result.is_err() {
-            return Err(Error {
-                code: 3,
-                message: "Could not seek file pointer".to_string(),
-            });
-        }
-        // - update read pointer
-        self.read_pointer = ptr_seek_result.unwrap() as usize;
         // - read file and count
         // -- total blocks - update self.end_block_count
         // -- free blocks - update self.free_blocks
         let mut free_blocks = BTreeSet::new();
-        // -- seek reader pointer to end of STORAGE_HEADER_SIZE
+        // -- seek reader pointer to end of STORAGE_HEADER_SIZE - offset of first block
         let ptr_seek_result = file.seek(std::io::SeekFrom::Start(STORAGE_HEADER_SIZE as u64));
         if ptr_seek_result.is_err() {
-            return Err(Error {
-                code: 3,
-                message: "Could not seek file pointer".to_string(),
-            });
+            return Err(
+                storage_errors::read_storage_block_headers_seek_1st_block_offset(
+                    ptr_seek_result.unwrap_err(),
+                ),
+            );
         }
         // -- traverse all blocks in file, untill end of file
         let mut block_index = 0;
@@ -397,10 +375,11 @@ impl Storage {
             let mut block_header_bytes = [0u8; BLOCK_HEADER_SIZE];
             let read_result = file.read(&mut block_header_bytes);
             if read_result.is_err() {
-                return Err(Error {
-                    code: 2,
-                    message: "Could not read from file".to_string(),
-                });
+                return Err(
+                    storage_errors::read_storage_block_headers_read_block_header(
+                        read_result.unwrap_err(),
+                    ),
+                );
             }
             // -- check end of file
             // -- verify read operation was successful
@@ -410,10 +389,9 @@ impl Storage {
                 break;
             }
             if read_size != BLOCK_HEADER_SIZE {
-                return Err(Error {
-                    code: 2,
-                    message: "Could not read all header bytes from file".to_string(),
-                });
+                return Err(
+                    storage_errors::read_storage_block_headers_read_block_header_success(read_size),
+                );
             }
             // -- update read pointer
             self.read_pointer += read_size;
@@ -430,10 +408,9 @@ impl Storage {
             let ptr_seek_result =
                 file.seek(std::io::SeekFrom::Current(self.header.block_len as i64));
             if ptr_seek_result.is_err() {
-                return Err(Error {
-                    code: 3,
-                    message: "Could not seek file pointer".to_string(),
-                });
+                return Err(storage_errors::read_storage_block_headers_seek_next_block(
+                    ptr_seek_result.unwrap_err(),
+                ));
             }
             let ptr_seek_result = ptr_seek_result.unwrap() as usize;
             self.read_pointer = ptr_seek_result;
@@ -466,35 +443,31 @@ impl Storage {
             .file_reader
             .seek(std::io::SeekFrom::Start(block_offset as u64));
         if seek_result.is_err() {
-            return Err(Error {
-                code: 3,
-                message: "Could not seek to block offset".to_string(),
-            });
+            return Err(storage_errors::read_block_seek_block_offset(
+                seek_result.unwrap_err(),
+            ));
         }
         // verify seek operation was successful
         let seek_position = seek_result.unwrap() as usize;
         if seek_position != block_offset {
-            return Err(Error {
-                code: 3,
-                message: "Could not seek to block offset".to_string(),
-            });
+            return Err(storage_errors::read_block_seek_block_offset_success(
+                seek_position,
+            ));
         }
         self.read_pointer = seek_position;
         // - read block data length from inital 4 bytes
         let block_data_size_bytes = &mut [0u8; 4];
         let read_result = self.file_reader.read(block_data_size_bytes);
         if read_result.is_err() {
-            return Err(Error {
-                code: 3,
-                message: "Could not read from file".to_string(),
-            });
+            return Err(storage_errors::read_block_read_block_header(
+                read_result.unwrap_err(),
+            ));
         }
         let read_size = read_result.unwrap();
         if read_size != BLOCK_HEADER_SIZE {
-            return Err(Error {
-                code: 2,
-                message: "Could not read all block data size bytes from file".to_string(),
-            });
+            return Err(storage_errors::read_block_read_block_header_success(
+                read_size,
+            ));
         }
         self.read_pointer += read_size;
         let block_header = BlockHeader::from_bytes(*block_data_size_bytes);
@@ -502,19 +475,17 @@ impl Storage {
         let mut block_data = vec![0u8; block_header.block_data_size as usize];
         let read_result = self.file_reader.read(&mut block_data[..]);
         if read_result.is_err() {
-            return Err(Error {
-                code: 4,
-                message: "Could not read from file".to_string(),
-            });
+            return Err(storage_errors::read_block_read_block_data(
+                read_result.unwrap_err(),
+            ));
         }
         let read_size = read_result.unwrap();
         self.read_pointer += read_size;
         // - verify read operation was successful
         if read_size != block_header.block_data_size as usize {
-            return Err(Error {
-                code: 4,
-                message: "Could not read all block data from file".to_string(),
-            });
+            return Err(storage_errors::read_block_read_block_data_success(
+                read_size,
+            ));
         }
         // - return read_pointer and block_data
         Ok((self.read_pointer, block_data))
@@ -529,18 +500,16 @@ impl Storage {
             .file_writer
             .seek(std::io::SeekFrom::Start(block_offset as u64));
         if seek_result.is_err() {
-            return Err(Error {
-                code: 5,
-                message: "Could not seek to block offset".to_string(),
-            });
+            return Err(storage_errors::write_block_seek_block_offset(
+                seek_result.unwrap_err(),
+            ));
         }
         // -- verify seek operation was successful
         let seek_position = seek_result.unwrap() as usize;
         if seek_position != block_offset {
-            return Err(Error {
-                code: 5,
-                message: "Could not seek to block offset".to_string(),
-            });
+            return Err(storage_errors::write_block_seek_block_offset_success(
+                seek_position,
+            ));
         }
         self.write_pointer = seek_position;
         // - Write Block Header
@@ -548,37 +517,33 @@ impl Storage {
         let block_header = BlockHeader::new(data.len() as BlockLength);
         let write_result = self.file_writer.write(&block_header.to_bytes());
         if write_result.is_err() {
-            return Err(Error {
-                code: 6,
-                message: "Could not write to file".to_string(),
-            });
+            return Err(storage_errors::write_block_write_block_header(
+                write_result.unwrap_err(),
+            ));
         }
         let write_size = write_result.unwrap();
         self.write_pointer += write_size;
         // -- verify write operation was successful
         if write_size != BLOCK_HEADER_SIZE {
-            return Err(Error {
-                code: 8,
-                message: "Could not write all data to file".to_string(),
-            });
+            return Err(storage_errors::write_block_write_block_header_success(
+                write_size,
+            ));
         }
         // - Write Block Data
         // -- write block data to file
         let write_result = self.file_writer.write(&data[..]);
         if write_result.is_err() {
-            return Err(Error {
-                code: 7,
-                message: "Could not write to file".to_string(),
-            });
+            return Err(storage_errors::write_block_write_block_data(
+                write_result.unwrap_err(),
+            ));
         }
         let write_size = write_result.unwrap();
         self.write_pointer += write_size;
         // -- verify write operation was successful
         if write_size != data.len() {
-            return Err(Error {
-                code: 9,
-                message: "Could not write all data to file".to_string(),
-            });
+            return Err(storage_errors::write_block_write_block_data_success(
+                write_size,
+            ));
         }
         // - update free_blocks map
         self.free_blocks.remove(&block_index);
@@ -608,18 +573,16 @@ impl Storage {
             .file_writer
             .seek(std::io::SeekFrom::Start(block_offset as u64));
         if seek_result.is_err() {
-            return Err(Error {
-                code: 10,
-                message: "Could not seek to block offset".to_string(),
-            });
+            return Err(storage_errors::delete_block_seek_block_offset(
+                seek_result.unwrap_err(),
+            ));
         }
         // -- verify seek operation was successful
         let seek_position = seek_result.unwrap() as usize;
         if seek_position != block_offset {
-            return Err(Error {
-                code: 10,
-                message: "Could not seek to block offset".to_string(),
-            });
+            return Err(storage_errors::delete_block_seek_block_offset_success(
+                seek_position,
+            ));
         }
         self.write_pointer = block_offset;
         // - Write Block Header
@@ -627,19 +590,17 @@ impl Storage {
         let block_header = BlockHeader::new(0);
         let write_result = self.file_writer.write(&block_header.to_bytes());
         if write_result.is_err() {
-            return Err(Error {
-                code: 11,
-                message: "Could not write to file".to_string(),
-            });
+            return Err(storage_errors::delete_block_write_block_header(
+                write_result.unwrap_err(),
+            ));
         }
         let write_size = write_result.unwrap();
         self.write_pointer += write_size;
         // -- verify write operation was successful
         if write_size != BLOCK_HEADER_SIZE {
-            return Err(Error {
-                code: 12,
-                message: "Could not write all data to file".to_string(),
-            });
+            return Err(storage_errors::delete_block_write_block_header_success(
+                write_size,
+            ));
         }
         // - hard delete block
         if hard_delete == true {
@@ -648,18 +609,16 @@ impl Storage {
             let block_data_of_zeros = vec![0u8; block_length as usize];
             let write_result = self.file_writer.write(&block_data_of_zeros[..]);
             if write_result.is_err() {
-                return Err(Error {
-                    code: 13,
-                    message: "Could not write to file".to_string(),
-                });
+                return Err(storage_errors::delete_block_write_block_data(
+                    write_result.unwrap_err(),
+                ));
             }
             let write_size = write_result.unwrap();
             // -- verify write operation was successful
             if write_size != block_length as usize {
-                return Err(Error {
-                    code: 14,
-                    message: "Could not write all data to file".to_string(),
-                });
+                return Err(storage_errors::delete_block_write_block_data_success(
+                    write_size,
+                ));
             }
             // -- increment write pointer
             self.write_pointer += write_size;
