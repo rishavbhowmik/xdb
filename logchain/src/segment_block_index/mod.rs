@@ -1,5 +1,7 @@
 use storage::BlockIndex;
-use util::Error;
+use util::error::Error;
+
+mod segment_block_index_errors;
 
 pub const BLOCK_INDEX_SIZE: usize = std::mem::size_of::<BlockIndex>();
 
@@ -8,10 +10,11 @@ pub const LAST_NEXT_BLOCK_INDEX: BlockIndex = BlockIndex::MAX;
 
 pub fn block_index_from_buffer(buffer: &[u8]) -> Result<BlockIndex, Error> {
     if buffer.len() < BLOCK_INDEX_SIZE {
-        return Err(Error {
-            code: 2,
-            message: "Insufficient buffer size".to_string(),
-        });
+        return Err(
+            segment_block_index_errors::block_index_from_buffer_insufficient_buffer_size(
+                buffer.len(),
+            ),
+        );
     }
     Ok(BlockIndex::from_le_bytes([
         buffer[0], buffer[1], buffer[2], buffer[3],
@@ -40,7 +43,6 @@ mod tests {
         // Insufficient buffer size case
         let result = block_index_from_buffer(&[0x78, 0x56, 0x34]);
         assert_eq!(result.is_err(), true);
-        assert_eq!(result.unwrap_err().code, 2);
     }
 
     #[test]
