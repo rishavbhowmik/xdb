@@ -355,19 +355,6 @@ impl Storage {
     fn read_storage_block_headers(&mut self) -> Result<usize, Error> {
         use std::io::prelude::*;
         let file = &mut self.file_reader;
-
-        // ... !!!!!!!!!!! ...
-        // // - seek reader pointer to end of file
-        // let ptr_seek_result = file.seek(std::io::SeekFrom::Start(0));
-        // if ptr_seek_result.is_err() {
-        //     return Err(storage_errors::read_storage_block_headers_seek_start(
-        //         ptr_seek_result.unwrap_err(),
-        //     ));
-        // }
-        // // - update read pointer
-        // self.read_pointer = ptr_seek_result.unwrap() as usize;
-        // ... !!!!!!!!!!! ...
-
         // - read file and count
         // -- total blocks - update self.end_block_count
         // -- free blocks - update self.free_blocks
