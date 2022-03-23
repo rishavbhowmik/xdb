@@ -1,3 +1,4 @@
+pub mod byte_cursor;
 pub mod error;
 
 /// convert 4 bytes unsinged integer little endian bytes array
