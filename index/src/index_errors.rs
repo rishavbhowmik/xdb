@@ -8,7 +8,7 @@ pub fn btree_index_from_bytes_empty_tupple() -> Error {
     )
 }
 
-pub fn hash_map_from_bytes_empty_tupple() -> Error {
+pub fn hash_index_from_bytes_empty_tupple() -> Error {
     Error::new(
         ErrorType::Unexpected,
         "hash_map_from_bytes_empty_tupple",
