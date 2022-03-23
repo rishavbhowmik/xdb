@@ -258,19 +258,31 @@ mod tests {
         let result = hash_index_to_bytes(&hash_map);
         assert!(result.is_ok());
         let bytes = result.unwrap();
-        assert_eq!(
-            bytes,
-            vec![
-                0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
-                0x10, 0x20, 0x30, 0x40, // key data
-                0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
-                0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
-                // ...
-                0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
-                0x10, 0x20, 0x30, 0x41, // key data
-                0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
-                0x15, 0x25, 0x35, 0x45, 0x55, 0x66, // value data
-            ]
+        assert!(
+            (bytes
+                == [
+                    0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
+                    0x10, 0x20, 0x30, 0x40, // key data
+                    0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
+                    0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
+                    // ...
+                    0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
+                    0x10, 0x20, 0x30, 0x41, // key data
+                    0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
+                    0x15, 0x25, 0x35, 0x45, 0x55, 0x66, // value data
+                ])
+                || (bytes
+                    == [
+                        0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
+                        0x10, 0x20, 0x30, 0x41, // key data
+                        0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
+                        0x15, 0x25, 0x35, 0x45, 0x55, 0x66, // value data
+                        // ...
+                        0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
+                        0x10, 0x20, 0x30, 0x40, // key data
+                        0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
+                        0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
+                    ])
         );
     }
 
