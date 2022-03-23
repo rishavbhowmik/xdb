@@ -102,11 +102,11 @@ mod tests {
         let mut kv_map = result.unwrap();
         assert_eq!(kv_map.len(), 2);
         let kv_tupple = kv_map.pop_front().unwrap();
-        assert_eq!(kv_tupple.key(), &[0x10, 0x20, 0x30, 0x40]);
-        assert_eq!(kv_tupple.value(), &[0x15, 0x25, 0x35, 0x45, 0x55, 0x65]);
+        assert_eq!(kv_tupple.key(), [0x10, 0x20, 0x30, 0x40]);
+        assert_eq!(kv_tupple.value(), [0x15, 0x25, 0x35, 0x45, 0x55, 0x65]);
         let kv_tupple = kv_map.pop_front().unwrap();
-        assert_eq!(kv_tupple.key(), &[0x10, 0x20, 0x30, 0x41]);
-        assert_eq!(kv_tupple.value(), &[0x15, 0x25, 0x35, 0x45, 0x55, 0x66]);
+        assert_eq!(kv_tupple.key(), [0x10, 0x20, 0x30, 0x41]);
+        assert_eq!(kv_tupple.value(), [0x15, 0x25, 0x35, 0x45, 0x55, 0x66]);
     }
 
     #[test]

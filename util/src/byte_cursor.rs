@@ -59,18 +59,18 @@ mod tests {
     fn cusor_consume() {
         let mut cursor = Cursor::new(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         assert_eq!(cursor.remaining_bytes(), 10);
-        assert_eq!(cursor.consume(5).unwrap(), &[1, 2, 3, 4, 5]);
+        assert_eq!(cursor.consume(5).unwrap(), [1, 2, 3, 4, 5]);
         assert_eq!(cursor.remaining_bytes(), 5);
-        assert_eq!(cursor.consume(5).unwrap(), &[6, 7, 8, 9, 10]);
+        assert_eq!(cursor.consume(5).unwrap(), [6, 7, 8, 9, 10]);
         assert_eq!(cursor.remaining_bytes(), 0);
         assert!(cursor.consume(1).is_err());
         let mut cursor = Cursor::new(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
         assert_eq!(cursor.remaining_bytes(), 12);
-        assert_eq!(cursor.consume(5).unwrap(), &[1, 2, 3, 4, 5]);
+        assert_eq!(cursor.consume(5).unwrap(), [1, 2, 3, 4, 5]);
         assert_eq!(cursor.remaining_bytes(), 7);
-        assert_eq!(cursor.consume(5).unwrap(), &[6, 7, 8, 9, 10]);
+        assert_eq!(cursor.consume(5).unwrap(), [6, 7, 8, 9, 10]);
         assert_eq!(cursor.remaining_bytes(), 2);
-        assert_eq!(cursor.consume(2).unwrap(), &[11, 12]);
+        assert_eq!(cursor.consume(2).unwrap(), [11, 12]);
         assert_eq!(cursor.remaining_bytes(), 0);
         assert!(cursor.consume(1).is_err());
         assert!(cursor.consume(0).is_ok());
