@@ -29,7 +29,7 @@ pub fn kv_map_to_bytes(kv_map: &LinkedList<kv_tupple::KVTupple>) -> Result<Vec<u
     Ok(bytes)
 }
 
-type BTreeIndex = BTreeMap<Vec<u8>, Vec<u8>>;
+pub type BTreeIndex = BTreeMap<Vec<u8>, Vec<u8>>;
 
 pub fn btree_index_from_bytes(bytes: &[u8]) -> Result<BTreeIndex, Error> {
     let mut kv_map = kv_map_from_bytes(bytes)?;
