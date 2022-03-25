@@ -3,20 +3,42 @@ use util::error::Error;
 
 mod kv_tupple_errors;
 
+pub enum IndexCrud {
+    INSERT,
+    DELETE,
+    NONE,
+}
+
 pub struct KVTupple {
+    crud_byte: u8,
     key: Vec<u8>,
     value: Vec<u8>,
 }
 
 impl KVTupple {
-    pub fn new(key: &[u8], value: &[u8]) -> Self {
+    pub fn new(crud: IndexCrud, key: &[u8], value: &[u8]) -> Self {
         KVTupple {
+            crud_byte: match crud {
+                IndexCrud::INSERT => 0,
+                IndexCrud::DELETE => 1,
+                IndexCrud::NONE => 2,
+            },
             key: key.to_vec(),
             value: value.to_vec(),
         }
     }
 
     pub fn from_byte_cursor(cursor: &mut Cursor) -> Result<Self, Error> {
+        // - parse crud
+        let byte_array = cursor.consume(1);
+        if byte_array.is_err() {
+            if byte_array.err().unwrap().kind() == std::io::ErrorKind::UnexpectedEof {
+                return Err(kv_tupple_errors::from_bytes_parse_crud_invalid_eof());
+            } else {
+                return Err(kv_tupple_errors::from_bytes_parse_crud_invalid_bytes());
+            }
+        }
+        let crud_byte = byte_array.unwrap()[0];
         // - parse key length
         let byte_array = cursor.consume(4);
         if byte_array.is_err() {
@@ -68,6 +90,7 @@ impl KVTupple {
         let value_data = byte_array.unwrap();
 
         Ok(KVTupple {
+            crud_byte,
             key: key_data.to_vec(),
             value: value_data.to_vec(),
         })
@@ -75,6 +98,14 @@ impl KVTupple {
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         KVTupple::from_byte_cursor(&mut Cursor::new(bytes))
+    }
+
+    pub fn crud(&self) -> IndexCrud {
+        match &self.crud_byte {
+            0x00 => IndexCrud::INSERT,
+            0x01 => IndexCrud::DELETE,
+            _ => IndexCrud::NONE,
+        }
     }
 
     pub fn key(&self) -> &[u8] {
@@ -87,6 +118,8 @@ impl KVTupple {
 
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
+        // - crud byte
+        bytes.extend_from_slice(&[self.crud_byte]);
         // - key length
         bytes.extend_from_slice(&u32::to_le_bytes(self.key.len() as u32));
         // - key data
@@ -107,6 +140,7 @@ mod tests {
     #[test]
     fn test_kv_tupple_to_bytes() {
         let kv_tupple = KVTupple::new(
+            IndexCrud::INSERT,
             &vec![0x10, 0x20, 0x30, 0x40],
             &vec![0x15, 0x25, 0x35, 0x45, 0x55, 0x65],
         );
@@ -114,6 +148,7 @@ mod tests {
         assert_eq!(
             bytes,
             vec![
+                0x00, // crud to insert
                 0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                 0x10, 0x20, 0x30, 0x40, // key data
                 0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -125,6 +160,7 @@ mod tests {
     #[test]
     fn test_bytes_to_kv_tupples() {
         let bytes = vec![
+            0x00, // crud to insert
             0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
             0x10, 0x20, 0x30, 0x40, // key data
             0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -143,7 +179,7 @@ mod tests {
     #[test]
     fn test_bytes_to_kv_and_back() {
         fn test(key: &[u8], value: &[u8]) {
-            let kv_tupple_from_kv = KVTupple::new(key, value);
+            let kv_tupple_from_kv = KVTupple::new(IndexCrud::INSERT, key, value);
             let bytes = kv_tupple_from_kv.to_bytes();
             let kv_tupple_from_bytes = KVTupple::from_bytes(&bytes);
             assert_eq!(kv_tupple_from_bytes.is_ok(), true);

@@ -48,7 +48,7 @@ pub fn btree_index_from_bytes(bytes: &[u8]) -> Result<BTreeIndex, Error> {
 pub fn btree_index_to_bytes(btree_index: &BTreeIndex) -> Result<Vec<u8>, Error> {
     let mut kv_map: LinkedList<kv_tupple::KVTupple> = LinkedList::new();
     for (key, value) in btree_index {
-        let kv_tupple = kv_tupple::KVTupple::new(key, value);
+        let kv_tupple = kv_tupple::KVTupple::new(kv_tupple::IndexCrud::INSERT, key, value);
         kv_map.push_back(kv_tupple);
     }
     kv_map_to_bytes(&kv_map)
@@ -73,7 +73,7 @@ pub fn hash_index_from_bytes(bytes: &[u8]) -> Result<HashIndex, Error> {
 pub fn hash_index_to_bytes(hash_index: &HashIndex) -> Result<Vec<u8>, Error> {
     let mut kv_map: LinkedList<kv_tupple::KVTupple> = LinkedList::new();
     for (key, value) in hash_index {
-        let kv_tupple = kv_tupple::KVTupple::new(key, value);
+        let kv_tupple = kv_tupple::KVTupple::new(kv_tupple::IndexCrud::INSERT, key, value);
         kv_map.push_back(kv_tupple);
     }
     kv_map_to_bytes(&kv_map)
@@ -87,11 +87,13 @@ mod tests {
     #[test]
     fn kv_map_from_bytes_test() {
         let bytes = vec![
+            0x00, // crud to insert
             0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
             0x10, 0x20, 0x30, 0x40, // key data
             0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
             0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
             // ...
+            0x00, // crud to insert
             0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
             0x10, 0x20, 0x30, 0x41, // key data
             0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -113,11 +115,13 @@ mod tests {
     fn kv_map_to_bytes_test() {
         let mut kv_map: LinkedList<kv_tupple::KVTupple> = LinkedList::new();
         let kv_tupple = kv_tupple::KVTupple::new(
+            kv_tupple::IndexCrud::INSERT,
             &[0x10, 0x20, 0x30, 0x40],
             &[0x15, 0x25, 0x35, 0x45, 0x55, 0x65],
         );
         kv_map.push_back(kv_tupple);
         let kv_tupple = kv_tupple::KVTupple::new(
+            kv_tupple::IndexCrud::INSERT,
             &[0x10, 0x20, 0x30, 0x41],
             &[0x15, 0x25, 0x35, 0x45, 0x55, 0x66],
         );
@@ -128,11 +132,13 @@ mod tests {
         assert_eq!(
             bytes,
             vec![
+                0x00, // crud to insert
                 0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                 0x10, 0x20, 0x30, 0x40, // key data
                 0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
                 0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
                 // ...
+                0x00, // crud to insert
                 0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                 0x10, 0x20, 0x30, 0x41, // key data
                 0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -144,11 +150,13 @@ mod tests {
     #[test]
     fn btree_index_from_bytes_test() {
         let bytes = vec![
+            0x00, // crud to insert
             0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
             0x10, 0x20, 0x30, 0x40, // key data
             0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
             0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
             // ...
+            0x00, // crud to insert
             0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
             0x10, 0x20, 0x30, 0x41, // key data
             0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -185,11 +193,13 @@ mod tests {
         assert_eq!(
             bytes,
             vec![
+                0x00, // crud to insert
                 0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                 0x10, 0x20, 0x30, 0x40, // key data
                 0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
                 0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
                 // ...
+                0x00, // crud to insert
                 0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                 0x10, 0x20, 0x30, 0x41, // key data
                 0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -220,11 +230,13 @@ mod tests {
     #[test]
     fn hash_index_from_bytes_test() {
         let bytes = vec![
+            0x00, // crud to insert
             0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
             0x10, 0x20, 0x30, 0x40, // key data
             0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
             0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
             // ...
+            0x00, // crud to insert
             0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
             0x10, 0x20, 0x30, 0x41, // key data
             0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -261,11 +273,13 @@ mod tests {
         assert!(
             (bytes
                 == [
+                    0x00, // crud to insert
                     0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                     0x10, 0x20, 0x30, 0x40, // key data
                     0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
                     0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
                     // ...
+                    0x00, // crud to insert
                     0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                     0x10, 0x20, 0x30, 0x41, // key data
                     0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -273,11 +287,13 @@ mod tests {
                 ])
                 || (bytes
                     == [
+                        0x00, // crud to insert
                         0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                         0x10, 0x20, 0x30, 0x41, // key data
                         0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
                         0x15, 0x25, 0x35, 0x45, 0x55, 0x66, // value data
                         // ...
+                        0x00, // crud to insert
                         0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                         0x10, 0x20, 0x30, 0x40, // key data
                         0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length

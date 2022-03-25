@@ -1,4 +1,4 @@
-use index::kv_tupple::KVTupple;
+use index::kv_tupple::{IndexCrud, KVTupple};
 use index::BTreeIndex;
 use index::{btree_index_from_bytes, btree_index_to_bytes};
 
@@ -44,7 +44,7 @@ fn btree_index_sync_log_file() {
         key: &str,
         value: &str,
     ) {
-        let kv_tupple = KVTupple::new(key.as_bytes(), value.as_bytes());
+        let kv_tupple = KVTupple::new(IndexCrud::INSERT, key.as_bytes(), value.as_bytes());
         // add to index in memory
         btree_index.insert(kv_tupple.key().to_vec(), kv_tupple.value().to_vec());
         let btree_index = btree_index.clone();
@@ -77,7 +77,6 @@ fn btree_index_sync_log_file() {
     .iter()
     .collect();
     let tmp_file_path = tmp_file_path.to_str().unwrap();
-
 
     // common index
     let mut btree_index = BTreeIndex::new();

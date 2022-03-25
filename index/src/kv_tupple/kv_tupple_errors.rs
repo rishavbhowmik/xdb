@@ -1,5 +1,23 @@
 use util::error::{Error, ErrorType};
 
+pub fn from_bytes_parse_crud_invalid_eof() -> Error {
+    Error::new(
+        ErrorType::Critical,
+        "kv_from_bytes_parse_crud_invalid_end_of_bytes",
+        Some(format!("The crud is invalid because the end of bytes was reached, but the key length was not read.")),
+    )
+}
+
+pub fn from_bytes_parse_crud_invalid_bytes() -> Error {
+    Error::new(
+        ErrorType::Critical,
+        "kv_from_bytes_parse_crud_invalid_bytes",
+        Some(format!(
+            "The crud is invalid because the bytes were not read."
+        )),
+    )
+}
+
 pub fn from_bytes_parse_key_length_invalid_eof() -> Error {
     Error::new(
         ErrorType::Critical,
