@@ -4,130 +4,227 @@ use util::error::Error;
 mod kv_tupple_errors;
 
 pub enum IndexCrud {
-    INSERT,
-    DELETE,
+    DELETE, // delete the key
+    INSERT, // insert new value to key
+    REMOVE, // remove the value from key
     NONE,
 }
 
+impl Clone for IndexCrud {
+    fn clone(&self) -> Self {
+        match self {
+            IndexCrud::DELETE => IndexCrud::DELETE,
+            IndexCrud::INSERT => IndexCrud::INSERT,
+            IndexCrud::REMOVE => IndexCrud::REMOVE,
+            IndexCrud::NONE => IndexCrud::NONE,
+        }
+    }
+}
+impl IndexCrud {
+    fn index_crud_from_byte(byte: u8) -> IndexCrud {
+        match byte {
+            0 => IndexCrud::DELETE,
+            1 => IndexCrud::INSERT,
+            2 => IndexCrud::REMOVE,
+            _ => IndexCrud::NONE,
+        }
+    }
+    fn index_crud_to_byte(&self) -> u8 {
+        match self {
+            IndexCrud::DELETE => 0,
+            IndexCrud::INSERT => 1,
+            IndexCrud::REMOVE => 2,
+            IndexCrud::NONE => 3,
+        }
+    }
+}
+
+type KeyLength = u32;
+type KeyData = Vec<u8>;
+const KEY_LENGTH_SIZE: usize = std::mem::size_of::<KeyLength>();
+
+type ValueLength = u32;
+type ValueData = Vec<u8>;
+const VALUE_LENGTH_SIZE: usize = std::mem::size_of::<ValueLength>();
+
 pub struct KVTupple {
-    crud_byte: u8,
-    key: Vec<u8>,
-    value: Vec<u8>,
+    index_crud: IndexCrud,
+    key: Option<KeyData>,
+    value: Option<ValueData>,
 }
 
 impl KVTupple {
-    pub fn new(crud: IndexCrud, key: &[u8], value: &[u8]) -> Self {
+    fn new(crud: IndexCrud, key: Option<&[u8]>, value: Option<&[u8]>) -> Self {
         KVTupple {
-            crud_byte: match crud {
-                IndexCrud::INSERT => 0,
-                IndexCrud::DELETE => 1,
-                IndexCrud::NONE => 2,
+            index_crud: crud,
+            key: match key {
+                Some(k) => Some(k.to_vec()),
+                None => None,
             },
-            key: key.to_vec(),
-            value: value.to_vec(),
+            value: match value {
+                Some(v) => Some(v.to_vec()),
+                None => None,
+            },
         }
     }
 
-    pub fn from_byte_cursor(cursor: &mut Cursor) -> Result<Self, Error> {
-        // - parse crud
+    pub fn new_delete(key: &[u8]) -> Self {
+        KVTupple::new(IndexCrud::DELETE, Some(key), None)
+    }
+
+    pub fn new_insert(key: &[u8], value: &[u8]) -> Self {
+        KVTupple::new(IndexCrud::INSERT, Some(key), Some(value))
+    }
+
+    pub fn new_remove(key: &[u8], value: &[u8]) -> Self {
+        KVTupple::new(IndexCrud::REMOVE, Some(key), Some(value))
+    }
+
+    fn index_crud_from_cursor(cursor: &mut Cursor) -> Result<IndexCrud, Error> {
         let byte_array = cursor.consume(1);
         if byte_array.is_err() {
             if byte_array.err().unwrap().kind() == std::io::ErrorKind::UnexpectedEof {
-                return Err(kv_tupple_errors::from_bytes_parse_crud_invalid_eof());
+                return Err(kv_tupple_errors::index_crud_from_cursor_invalid_bytes());
             } else {
-                return Err(kv_tupple_errors::from_bytes_parse_crud_invalid_bytes());
+                return Err(kv_tupple_errors::index_crud_from_cursor_invalid_bytes());
             }
         }
         let crud_byte = byte_array.unwrap()[0];
-        // - parse key length
-        let byte_array = cursor.consume(4);
+        let index_crud = IndexCrud::index_crud_from_byte(crud_byte);
+        if matches!(index_crud, IndexCrud::NONE) {
+            return Err(kv_tupple_errors::index_crud_from_cursor_invalid_crud());
+        }
+        Ok(index_crud)
+    }
+
+    fn key_from_cursor(cursor: &mut Cursor) -> Result<Option<KeyData>, Error> {
+        // parse key length
+        let byte_array = cursor.consume(KEY_LENGTH_SIZE);
         if byte_array.is_err() {
             if byte_array.err().unwrap().kind() == std::io::ErrorKind::UnexpectedEof {
-                return Err(kv_tupple_errors::from_bytes_parse_key_length_invalid_eof());
+                return Err(kv_tupple_errors::key_from_cursor_invalid_eof_at_key_len());
             } else {
-                return Err(kv_tupple_errors::from_bytes_parse_key_length_invalid_bytes());
+                return Err(kv_tupple_errors::key_from_cursor_invalid_bytes_at_key_len());
             }
         }
         let byte_array = byte_array.unwrap();
         let key_len =
-            u32::from_le_bytes([byte_array[0], byte_array[1], byte_array[2], byte_array[3]])
+            KeyLength::from_le_bytes([byte_array[0], byte_array[1], byte_array[2], byte_array[3]])
                 as usize;
 
-        // - parse key data
+        // parse key data
         let byte_array = cursor.consume(key_len);
         if byte_array.is_err() {
             if byte_array.err().unwrap().kind() == std::io::ErrorKind::UnexpectedEof {
-                return Err(kv_tupple_errors::from_bytes_parse_key_data_invalid_eof());
+                return Err(kv_tupple_errors::key_from_cursor_invalid_eof_at_key_data());
             } else {
-                return Err(kv_tupple_errors::from_bytes_parse_key_data_invalid_bytes());
+                return Err(kv_tupple_errors::key_from_cursor_invalid_bytes_at_key_data());
             }
         }
         let key_data = byte_array.unwrap();
+        Ok(Some(key_data.to_vec()))
+    }
 
-        // - parse value length
-        let byte_array = cursor.consume(4);
+    fn value_from_cursor(cursor: &mut Cursor) -> Result<ValueData, Error> {
+        // parse value length
+        let byte_array = cursor.consume(VALUE_LENGTH_SIZE);
         if byte_array.is_err() {
             if byte_array.err().unwrap().kind() == std::io::ErrorKind::UnexpectedEof {
-                return Err(kv_tupple_errors::from_bytes_parse_value_length_invalid_eof());
+                return Err(kv_tupple_errors::value_from_cursor_invalid_eof_at_value_len());
             } else {
-                return Err(kv_tupple_errors::from_bytes_parse_value_length_invalid_bytes());
+                return Err(kv_tupple_errors::value_from_cursor_invalid_bytes_at_value_len());
             }
         }
         let byte_array = byte_array.unwrap();
-        let value_len =
-            u32::from_le_bytes([byte_array[0], byte_array[1], byte_array[2], byte_array[3]])
-                as usize;
+        let value_len = ValueLength::from_le_bytes([
+            byte_array[0],
+            byte_array[1],
+            byte_array[2],
+            byte_array[3],
+        ]) as usize;
 
-        // - parse value data
+        // parse value data
         let byte_array = cursor.consume(value_len);
         if byte_array.is_err() {
             if byte_array.err().unwrap().kind() == std::io::ErrorKind::UnexpectedEof {
-                return Err(kv_tupple_errors::from_bytes_parse_value_data_invalid_eof());
+                return Err(kv_tupple_errors::value_from_cursor_invalid_eof_at_value_data());
             } else {
-                return Err(kv_tupple_errors::from_bytes_parse_value_data_invalid_bytes());
+                return Err(kv_tupple_errors::value_from_cursor_invalid_bytes_at_value_data());
             }
         }
         let value_data = byte_array.unwrap();
+        Ok(value_data.to_vec())
+    }
 
-        Ok(KVTupple {
-            crud_byte,
-            key: key_data.to_vec(),
-            value: value_data.to_vec(),
-        })
+    pub fn from_byte_cursor(cursor: &mut Cursor) -> Result<Self, Error> {
+        let index_crud = KVTupple::index_crud_from_cursor(cursor)?;
+        match index_crud {
+            IndexCrud::DELETE => {
+                let key = KVTupple::key_from_cursor(cursor)?;
+                Ok(KVTupple::new_delete(key.unwrap().as_slice()))
+            }
+            IndexCrud::INSERT => {
+                let key = KVTupple::key_from_cursor(cursor)?;
+                let value = KVTupple::value_from_cursor(cursor)?;
+                Ok(KVTupple::new_insert(
+                    key.unwrap().as_slice(),
+                    value.as_slice(),
+                ))
+            }
+            IndexCrud::REMOVE => {
+                let key = KVTupple::key_from_cursor(cursor)?;
+                let value = KVTupple::value_from_cursor(cursor)?;
+                Ok(KVTupple::new_remove(
+                    key.unwrap().as_slice(),
+                    value.as_slice(),
+                ))
+            }
+            IndexCrud::NONE => Err(kv_tupple_errors::from_byte_cursor_invalid_crud()),
+        }
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         KVTupple::from_byte_cursor(&mut Cursor::new(bytes))
     }
 
-    pub fn crud(&self) -> IndexCrud {
-        match &self.crud_byte {
-            0x00 => IndexCrud::INSERT,
-            0x01 => IndexCrud::DELETE,
-            _ => IndexCrud::NONE,
+    pub fn index_crud(&self) -> IndexCrud {
+        self.index_crud.clone()
+    }
+
+    pub fn key(&self) -> Option<Vec<u8>> {
+        match self.key {
+            None => None,
+            _ => Some(self.key.as_ref().unwrap().clone()),
         }
     }
 
-    pub fn key(&self) -> &[u8] {
-        self.key.as_slice()
-    }
-
-    pub fn value(&self) -> &[u8] {
-        self.value.as_slice()
+    pub fn value(&self) -> Option<Vec<u8>> {
+        match self.value {
+            None => None,
+            _ => Some(self.value.as_ref().unwrap().clone()),
+        }
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         // - crud byte
-        bytes.extend_from_slice(&[self.crud_byte]);
-        // - key length
-        bytes.extend_from_slice(&u32::to_le_bytes(self.key.len() as u32));
-        // - key data
-        bytes.extend_from_slice(self.key.as_slice());
-        // - value length
-        bytes.extend_from_slice(&u32::to_le_bytes(self.value.len() as u32));
-        // - value data
-        bytes.extend_from_slice(self.value.as_slice());
+        bytes.extend_from_slice(&[self.index_crud.index_crud_to_byte()]);
+        // - key
+        let key = self.key();
+        if key.is_some() {
+            let key = key.unwrap();
+            bytes.extend_from_slice(&u32::to_le_bytes(key.len() as u32));
+            bytes.extend_from_slice(&key);
+        } else {
+            return bytes;
+        }
+        // - value
+        let value = self.value();
+        if value.is_some() {
+            let value = value.unwrap();
+            bytes.extend_from_slice(&u32::to_le_bytes(value.len() as u32));
+            bytes.extend_from_slice(&value);
+        }
         bytes
     }
 }
@@ -139,8 +236,18 @@ mod tests {
 
     #[test]
     fn test_kv_tupple_to_bytes() {
-        let kv_tupple = KVTupple::new(
-            IndexCrud::INSERT,
+        let kv_tupple = KVTupple::new_delete(&vec![0x10, 0x20, 0x30, 0x40]);
+        let bytes = kv_tupple.to_bytes();
+        assert_eq!(
+            bytes,
+            vec![
+                0x00, // crud to delete
+                0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
+                0x10, 0x20, 0x30, 0x40, // key data
+            ]
+        );
+
+        let kv_tupple = KVTupple::new_insert(
             &vec![0x10, 0x20, 0x30, 0x40],
             &vec![0x15, 0x25, 0x35, 0x45, 0x55, 0x65],
         );
@@ -148,7 +255,23 @@ mod tests {
         assert_eq!(
             bytes,
             vec![
-                0x00, // crud to insert
+                0x01, // crud to insert
+                0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
+                0x10, 0x20, 0x30, 0x40, // key data
+                0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
+                0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
+            ]
+        );
+
+        let kv_tupple = KVTupple::new_remove(
+            &vec![0x10, 0x20, 0x30, 0x40],
+            &vec![0x15, 0x25, 0x35, 0x45, 0x55, 0x65],
+        );
+        let bytes = kv_tupple.to_bytes();
+        assert_eq!(
+            bytes,
+            vec![
+                0x02, // crud to remove
                 0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
                 0x10, 0x20, 0x30, 0x40, // key data
                 0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
@@ -160,32 +283,74 @@ mod tests {
     #[test]
     fn test_bytes_to_kv_tupples() {
         let bytes = vec![
-            0x00, // crud to insert
+            0x00, // crud to delete
+            0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
+            0x10, 0x20, 0x30, 0x40, // key data
+        ];
+        let kv_tupple = KVTupple::from_bytes(&bytes).unwrap();
+        assert!(matches!(kv_tupple.index_crud(), IndexCrud::DELETE));
+        assert_eq!(kv_tupple.key(), Some(vec![0x10, 0x20, 0x30, 0x40]));
+        assert_eq!(kv_tupple.value(), None);
+
+        let bytes = vec![
+            0x01, // crud to insert
             0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
             0x10, 0x20, 0x30, 0x40, // key data
             0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
             0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
         ];
-        let index_tupple_result = KVTupple::from_bytes(&bytes);
-        assert_eq!(index_tupple_result.is_ok(), true);
-        let index_tupple = index_tupple_result.unwrap();
-        assert_eq!(index_tupple.key(), vec![0x10, 0x20, 0x30, 0x40]);
+        let kv_tupple = KVTupple::from_bytes(&bytes).unwrap();
+        assert!(matches!(kv_tupple.index_crud(), IndexCrud::INSERT));
+        assert_eq!(kv_tupple.key(), Some(vec![0x10, 0x20, 0x30, 0x40]));
         assert_eq!(
-            index_tupple.value(),
-            vec![0x15, 0x25, 0x35, 0x45, 0x55, 0x65]
+            kv_tupple.value(),
+            Some(vec![0x15, 0x25, 0x35, 0x45, 0x55, 0x65])
+        );
+
+        let bytes = vec![
+            0x02, // crud to remove
+            0x04, 0x00, 0x00, 0x00, // little endian 4 bytes key length
+            0x10, 0x20, 0x30, 0x40, // key data
+            0x06, 0x00, 0x00, 0x00, // little endian 4 bytes value length
+            0x15, 0x25, 0x35, 0x45, 0x55, 0x65, // value data
+        ];
+        let kv_tupple = KVTupple::from_bytes(&bytes).unwrap();
+        assert!(matches!(kv_tupple.index_crud(), IndexCrud::REMOVE));
+        assert_eq!(kv_tupple.key(), Some(vec![0x10, 0x20, 0x30, 0x40]));
+        assert_eq!(
+            kv_tupple.value(),
+            Some(vec![0x15, 0x25, 0x35, 0x45, 0x55, 0x65])
         );
     }
 
     #[test]
     fn test_bytes_to_kv_and_back() {
-        fn test(key: &[u8], value: &[u8]) {
-            let kv_tupple_from_kv = KVTupple::new(IndexCrud::INSERT, key, value);
+        fn test_delete(key: &[u8]) {
+            let kv_tupple_from_kv = KVTupple::new_delete(key);
             let bytes = kv_tupple_from_kv.to_bytes();
             let kv_tupple_from_bytes = KVTupple::from_bytes(&bytes);
             assert_eq!(kv_tupple_from_bytes.is_ok(), true);
             let kv_tupple_from_bytes = kv_tupple_from_bytes.unwrap();
-            assert_eq!(kv_tupple_from_bytes.key(), key.to_vec());
-            assert_eq!(kv_tupple_from_bytes.value(), value.to_vec());
+            assert_eq!(kv_tupple_from_bytes.key(), Some(key.to_vec()));
+            assert_eq!(kv_tupple_from_bytes.value(), None);
+        }
+        fn test_insert(key: &[u8], value: &[u8]) {
+            let kv_tupple_from_kv = KVTupple::new_insert(key, value);
+            let bytes = kv_tupple_from_kv.to_bytes();
+            let kv_tupple_from_bytes = KVTupple::from_bytes(&bytes);
+            assert_eq!(kv_tupple_from_bytes.is_ok(), true);
+            let kv_tupple_from_bytes = kv_tupple_from_bytes.unwrap();
+            assert_eq!(kv_tupple_from_bytes.key(), Some(key.to_vec()));
+            assert_eq!(kv_tupple_from_bytes.value(), Some(value.to_vec()));
+        }
+        fn test_remove(key: &[u8], value: &[u8]) {
+            let kv_tupple_from_kv = KVTupple::new_remove(key, value);
+            let bytes = kv_tupple_from_kv.to_bytes();
+            let kv_tupple_from_bytes = KVTupple::from_bytes(&bytes);
+            assert_eq!(kv_tupple_from_bytes.is_ok(), true);
+            let kv_tupple_from_bytes = kv_tupple_from_bytes.unwrap();
+            assert_eq!(kv_tupple_from_bytes.key(), Some(key.to_vec()));
+            assert_eq!(kv_tupple_from_bytes.value(), Some(value.to_vec()));
         }
         let key = vec![
             0x80, 0x70, 0x60, 0x50, 0x40, 0x30, 0x20, 0x10, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60,
@@ -195,12 +360,28 @@ mod tests {
             0x85, 0x75, 0x65, 0x55, 0x45, 0x35, 0x25, 0x15, 0x15, 0x25, 0x35, 0x45, 0x55, 0x65,
             0x75, 0x85,
         ];
-        test(&key, &value);
+        test_delete(&key);
+        test_insert(&key, &value);
+        test_remove(&key, &value);
         let key = "some random key as string".as_bytes();
         let value = "some random value as string".as_bytes();
-        test(&key, &value);
+        test_delete(&key);
+        test_insert(&key, &value);
+        test_remove(&key, &value);
         let key = u32::to_le_bytes(u32::MAX);
         let value = u32::to_le_bytes(u32::MAX);
-        test(&key, &value);
+        test_delete(&key);
+        test_insert(&key, &value);
+        test_remove(&key, &value);
+        let key = u32::to_le_bytes(u32::MAX);
+        let value = u32::to_le_bytes(u32::MAX);
+        test_delete(&key);
+        test_insert(&key, &value);
+        test_remove(&key, &value);
+        let key = vec![];
+        let value = vec![];
+        test_delete(&key);
+        test_insert(&key, &value);
+        test_remove(&key, &value);
     }
 }

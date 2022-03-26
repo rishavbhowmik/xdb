@@ -1,83 +1,97 @@
 use util::error::{Error, ErrorType};
 
-pub fn from_bytes_parse_crud_invalid_eof() -> Error {
-    Error::new(
-        ErrorType::Critical,
-        "kv_from_bytes_parse_crud_invalid_end_of_bytes",
-        Some(format!("The crud is invalid because the end of bytes was reached, but the key length was not read.")),
-    )
+pub fn from_byte_cursor_invalid_crud() -> Error {
+    Error::new(ErrorType::Unexpected, "invalid crud", None)
 }
 
-pub fn from_bytes_parse_crud_invalid_bytes() -> Error {
+pub fn index_crud_from_cursor_invalid_bytes() -> Error {
     Error::new(
         ErrorType::Critical,
-        "kv_from_bytes_parse_crud_invalid_bytes",
+        "kv_index_crud_from_cursor_invalid_bytes",
         Some(format!(
             "The crud is invalid because the bytes were not read."
         )),
     )
 }
 
-pub fn from_bytes_parse_key_length_invalid_eof() -> Error {
+pub fn index_crud_from_cursor_invalid_crud() -> Error {
     Error::new(
         ErrorType::Critical,
-        "kv_from_bytes_parse_key_length_invalid_end_of_bytes",
-        Some(format!("The key length is invalid because the end of bytes was reached, but the key length was not read.")),
+        "kv_index_crud_from_cursor_invalid_crud",
+        Some(format!(
+            "The crud is invalid because the crud was not read."
+        )),
     )
 }
 
-pub fn from_bytes_parse_key_length_invalid_bytes() -> Error {
-    Error::new(
-        ErrorType::Unexpected,
-        "kv_from_bytes_parse_key_length_invalid_bytes",
-        None,
-    )
-}
-
-pub fn from_bytes_parse_key_data_invalid_eof() -> Error {
+pub fn key_from_cursor_invalid_eof_at_key_len() -> Error {
     Error::new(
         ErrorType::Critical,
-        "kv_from_bytes_parse_key_data_invalid_end_of_bytes",
-        Some(format!("The key data is invalid because the end of bytes was reached, but the key data was not read.")),
+        "kv_key_from_cursor_invalid_end_of_bytes",
+        Some(format!("The key is invalid because the end of bytes was reached, but the key length was not read.")),
     )
 }
 
-pub fn from_bytes_parse_key_data_invalid_bytes() -> Error {
-    Error::new(
-        ErrorType::Unexpected,
-        "kv_from_bytes_parse_key_data_invalid_bytes",
-        None,
-    )
-}
-
-pub fn from_bytes_parse_value_length_invalid_eof() -> Error {
+pub fn key_from_cursor_invalid_bytes_at_key_len() -> Error {
     Error::new(
         ErrorType::Critical,
-        "kv_from_bytes_parse_value_length_invalid_end_of_bytes",
-        Some(format!("The value length is invalid because the end of bytes was reached, but the value length was not read.")),
+        "kv_key_from_cursor_invalid_bytes",
+        Some(format!(
+            "The key is invalid because the bytes were not read."
+        )),
     )
 }
 
-pub fn from_bytes_parse_value_length_invalid_bytes() -> Error {
-    Error::new(
-        ErrorType::Unexpected,
-        "kv_from_bytes_parse_value_length_invalid_bytes",
-        None,
-    )
-}
-
-pub fn from_bytes_parse_value_data_invalid_eof() -> Error {
+pub fn key_from_cursor_invalid_eof_at_key_data() -> Error {
     Error::new(
         ErrorType::Critical,
-        "kv_from_bytes_parse_value_data_invalid_end_of_bytes",
-        None,
+        "kv_key_from_cursor_invalid_end_of_bytes",
+        Some(format!("The key is invalid because the end of bytes was reached, but the key data was not read.")),
     )
 }
 
-pub fn from_bytes_parse_value_data_invalid_bytes() -> Error {
+pub fn key_from_cursor_invalid_bytes_at_key_data() -> Error {
     Error::new(
-        ErrorType::Unexpected,
-        "kv_from_bytes_parse_value_data_invalid_bytes",
-        None,
+        ErrorType::Critical,
+        "kv_key_from_cursor_invalid_bytes",
+        Some(format!(
+            "The key is invalid because the bytes were not read."
+        )),
+    )
+}
+
+pub fn value_from_cursor_invalid_eof_at_value_len() -> Error {
+    Error::new(
+        ErrorType::Critical,
+        "kv_value_from_cursor_invalid_end_of_bytes",
+        Some(format!("The value is invalid because the end of bytes was reached, but the value length was not read.")),
+    )
+}
+
+pub fn value_from_cursor_invalid_bytes_at_value_len() -> Error {
+    Error::new(
+        ErrorType::Critical,
+        "kv_value_from_cursor_invalid_bytes",
+        Some(format!(
+            "The value is invalid because the bytes were not read."
+        )),
+    )
+}
+
+pub fn value_from_cursor_invalid_eof_at_value_data() -> Error {
+    Error::new(
+        ErrorType::Critical,
+        "kv_value_from_cursor_invalid_end_of_bytes",
+        Some(format!("The value is invalid because the end of bytes was reached, but the value data was not read.")),
+    )
+}
+
+pub fn value_from_cursor_invalid_bytes_at_value_data() -> Error {
+    Error::new(
+        ErrorType::Critical,
+        "kv_value_from_cursor_invalid_bytes",
+        Some(format!(
+            "The value is invalid because the bytes were not read."
+        )),
     )
 }
