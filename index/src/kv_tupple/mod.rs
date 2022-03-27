@@ -20,6 +20,7 @@ impl Clone for IndexCrud {
         }
     }
 }
+
 impl IndexCrud {
     fn index_crud_from_byte(byte: u8) -> IndexCrud {
         match byte {
@@ -40,11 +41,11 @@ impl IndexCrud {
 }
 
 type KeyLength = u32;
-type KeyData = Vec<u8>;
+pub type KeyData = Vec<u8>;
 const KEY_LENGTH_SIZE: usize = std::mem::size_of::<KeyLength>();
 
 type ValueLength = u32;
-type ValueData = Vec<u8>;
+pub type ValueData = Vec<u8>;
 const VALUE_LENGTH_SIZE: usize = std::mem::size_of::<ValueLength>();
 
 pub struct KVTupple {
@@ -191,14 +192,14 @@ impl KVTupple {
         self.index_crud.clone()
     }
 
-    pub fn key(&self) -> Option<Vec<u8>> {
+    pub fn key(&self) -> Option<KeyData> {
         match self.key {
             None => None,
             _ => Some(self.key.as_ref().unwrap().clone()),
         }
     }
 
-    pub fn value(&self) -> Option<Vec<u8>> {
+    pub fn value(&self) -> Option<ValueData> {
         match self.value {
             None => None,
             _ => Some(self.value.as_ref().unwrap().clone()),
