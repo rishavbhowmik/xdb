@@ -22,7 +22,7 @@ Things to ensure while persisting an index in storage:
 
 Index log file serially stores insert/delete operations, before they are updated in memory.
 
-#### INSERT_LOG tupple format
+#### INSERT_LOG tuple format
 
 ```
 |-------------------------------|
@@ -38,7 +38,7 @@ Index log file serially stores insert/delete operations, before they are updated
 |-------------------------------|--------------------|---------
 ```
 
-#### DELETE_LOG tupple format
+#### DELETE_LOG tuple format
 
 ```
 |-------------------------------|
@@ -54,14 +54,14 @@ Index log file serially stores insert/delete operations, before they are updated
 
 ### INSERT
 
-1. Append index log with `INSERT_LOG` tupple.
+1. Append index log with `INSERT_LOG` tuple.
 2. If Atomic Locking is enabled, lock the read operations.
 3. Insert new key value pair in index.
 4. Unlock the read operations.
 
 ### DELETE
 
-1. Append index log with `DELETE_LOG` tupple.
+1. Append index log with `DELETE_LOG` tuple.
 2. If Atomic Locking is enabled, lock the read operations.
 3. Delete key from index.
 4. Unlock the read operations.
