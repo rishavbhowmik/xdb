@@ -35,3 +35,17 @@ pub trait UniqueIndexTrait<K, V> {
     /// Returns tuple for syncing.
     fn delete(&mut self, key: K) -> Result<Vec<u8>, Error>;
 }
+
+pub trait IndexSerializationTrait<S, I> {
+    /// Parse bytes and produce a new index.
+    fn from_bytes(bytes: &[u8]) -> Result<S, Error>;
+
+    /// Serialize the index into bytes.
+    fn to_bytes(&self) -> Vec<u8>;
+}
+
+pub trait IndexCloneTrait<S, I> {
+    /// Clone the index.
+    fn clone(&self) -> S;
+    fn index_clone(&self) -> I;
+}
