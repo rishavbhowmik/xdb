@@ -200,13 +200,13 @@ impl UniqueIndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for UniqueBTreeI
             false => {
                 let entry = self.index.entry(key.clone());
                 match entry {
+                    std::collections::btree_map::Entry::Occupied(_) => {
+                        return Err(index_errors::unique_index_trait_set_key_occupied());
+                    }
                     std::collections::btree_map::Entry::Vacant(entry) => {
                         entry.insert(value.clone());
                         let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
                         return Ok(tuple.to_bytes());
-                    }
-                    std::collections::btree_map::Entry::Occupied(entry) => {
-                        return Err(index_errors::unique_index_trait_set_key_occupied());
                     }
                 }
             }
