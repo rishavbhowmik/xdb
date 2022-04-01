@@ -47,5 +47,9 @@ pub trait IndexSerializationTrait<S, I> {
 pub trait IndexCloneTrait<S, I> {
     /// Clone the index.
     fn clone(&self) -> S;
+
+    /// Clone the index map.
+    /// - Clone BTreeMap for BTreeIndex.
+    /// - Clone HashMap for HashMapIndex.
     fn index_clone(&self) -> I;
 }
