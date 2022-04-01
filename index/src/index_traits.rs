@@ -1,5 +1,7 @@
 use util::error::Error;
 
+/// IndexTrait is for non-unique indexes. Multiple values can be associated with a single key.
+/// - Do not use this trait for unique indexes. Use UniqueIndexTrait instead.
 pub trait IndexTrait<K, V> {
     /// Get values associated with the given key.
     fn get(&self, key: K) -> Vec<V>;
@@ -19,6 +21,8 @@ pub trait IndexTrait<K, V> {
     fn delete(&mut self, key: K) -> Result<Vec<u8>, Error>;
 }
 
+/// UniqueIndexTrait is for unique indexes. Only one value can be associated with a single key.
+/// - Do not use this trait for non-unique indexes. Use IndexTrait instead.
 pub trait UniqueIndexTrait<K, V> {
     /// Get values associated with the given key.
     fn get(&self, key: K) -> Option<V>;
@@ -36,6 +40,7 @@ pub trait UniqueIndexTrait<K, V> {
     fn delete(&mut self, key: K) -> Result<Vec<u8>, Error>;
 }
 
+/// Trait to serialize index to bytes and deserialize bytes to index.
 pub trait IndexSerializationTrait<S, I> {
     /// Parse bytes and produce a new index.
     fn from_bytes(bytes: &[u8]) -> Result<S, Error>;
@@ -44,6 +49,7 @@ pub trait IndexSerializationTrait<S, I> {
     fn to_bytes(&self) -> Vec<u8>;
 }
 
+/// Untility trait for index. Useful for tests.
 pub trait IndexCloneTrait<S, I> {
     /// Clone the index.
     fn clone(&self) -> S;
