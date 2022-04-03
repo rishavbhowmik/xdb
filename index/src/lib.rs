@@ -65,7 +65,7 @@ impl IndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for BTreeIndex {
     fn delete(&mut self, key: kv::tuple::KeyData) -> Result<Vec<u8>, Error> {
         match self.index.remove(&key) {
             Some(_) => Ok(kv::tuple::KVTuple::new_delete(&key).to_bytes()),
-            None => Err(index_errors::index_trait_remove_key_not_found()),
+            None => Err(index_errors::index_trait_delete_key_not_found()),
         }
     }
 }
@@ -182,7 +182,7 @@ impl UniqueIndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for UniqueBTreeI
     fn delete(&mut self, key: kv::tuple::KeyData) -> Result<Vec<u8>, Error> {
         match self.index.remove(&key) {
             Some(_) => Ok(kv::tuple::KVTuple::new_delete(&key).to_bytes()),
-            None => Err(index_errors::index_trait_remove_key_not_found()),
+            None => Err(index_errors::index_trait_delete_key_not_found()),
         }
     }
     fn set(
@@ -326,7 +326,7 @@ impl IndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for HashMapIndex {
     fn delete(&mut self, key: kv::tuple::KeyData) -> Result<Vec<u8>, Error> {
         match self.index.remove(&key) {
             Some(_) => Ok(kv::tuple::KVTuple::new_delete(&key).to_bytes()),
-            None => Err(index_errors::index_trait_remove_key_not_found()),
+            None => Err(index_errors::index_trait_delete_key_not_found()),
         }
     }
     fn insert(
@@ -445,7 +445,7 @@ impl UniqueIndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for UniqueHashMa
     fn delete(&mut self, key: kv::tuple::KeyData) -> Result<Vec<u8>, Error> {
         match self.index.remove(&key) {
             Some(_) => Ok(kv::tuple::KVTuple::new_delete(&key).to_bytes()),
-            None => Err(index_errors::index_trait_remove_key_not_found()),
+            None => Err(index_errors::index_trait_delete_key_not_found()),
         }
     }
     fn set(
@@ -558,6 +558,278 @@ mod tests {
 
     use super::*;
 
+    // ... ... ... ... ... ... BTreeIndex ... ... ... ... ... ... ...
+
+    #[test]
+    fn btree_index_new() {
+        let mut btree_index = BTreeIndex::from_bytes(&[]).unwrap();
+        assert_eq!(btree_index.index.len(), 0);
+
+        let k0 = vec![];
+        let v0 = vec![];
+        let sync_bytes = btree_index.insert(k0.clone(), v0.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 1);
+        assert_eq!(btree_index.exists(k0.clone(), v0.clone()), true);
+        assert_eq!(btree_index.get(k0.clone()), vec![v0.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k0, &v0).to_bytes()
+        );
+
+        // insert some keys & values
+
+        let (k1, v1) = (vec![1], vec![1]);
+        let sync_bytes = btree_index.insert(k1.clone(), v1.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 2);
+        assert_eq!(btree_index.exists(k1.clone(), v1.clone()), true);
+        assert_eq!(btree_index.get(k1.clone()), vec![v1.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k1, &v1).to_bytes()
+        );
+
+        let v1_2 = vec![1, 1];
+        let sync_bytes = btree_index.insert(k1.clone(), v1_2.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 2);
+        assert_eq!(btree_index.exists(k1.clone(), v1_2.clone()), true);
+        assert_eq!(btree_index.get(k1.clone()), vec![v1.clone(), v1_2.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k1, &v1_2).to_bytes()
+        );
+
+        let (k2, v2) = (vec![2, 2], vec![2]);
+        let sync_bytes = btree_index.insert(k2.clone(), v2.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 3);
+        assert_eq!(btree_index.exists(k2.clone(), v2.clone()), true);
+        assert_eq!(btree_index.get(k2.clone()), vec![v2.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k2, &v2).to_bytes()
+        );
+
+        let v2_2 = vec![2, 2];
+        let sync_bytes = btree_index.insert(k2.clone(), v2_2.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 3);
+        assert_eq!(btree_index.exists(k2.clone(), v2_2.clone()), true);
+        assert_eq!(btree_index.get(k2.clone()), vec![v2.clone(), v2_2.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k2, &v2_2).to_bytes()
+        );
+
+        let v2_3 = vec![2, 2, 2];
+        let sync_bytes = btree_index.insert(k2.clone(), v2_3.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 3);
+        assert_eq!(btree_index.exists(k2.clone(), v2_3.clone()), true);
+        assert_eq!(
+            btree_index.get(k2.clone()),
+            vec![v2.clone(), v2_2.clone(), v2_3.clone()]
+        );
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k2, &v2_3).to_bytes()
+        );
+
+        let (k3, v3) = (vec![3, 3, 3], vec![3]);
+        let sync_bytes = btree_index.insert(k3.clone(), v3.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 4);
+        assert_eq!(btree_index.exists(k3.clone(), v3.clone()), true);
+        assert_eq!(btree_index.get(k3.clone()), vec![v3.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k3, &v3).to_bytes()
+        );
+
+        let v3_2 = vec![3, 3, 3];
+        let sync_bytes = btree_index.insert(k3.clone(), v3_2.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 4);
+        assert_eq!(btree_index.exists(k3.clone(), v3_2.clone()), true);
+        assert_eq!(btree_index.get(k3.clone()), vec![v3.clone(), v3_2.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k3, &v3_2).to_bytes()
+        );
+
+        let (k4, v4) = (vec![4, 4, 4, 4], vec![4]);
+        let sync_bytes = btree_index.insert(k4.clone(), v4.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 5);
+        assert_eq!(btree_index.exists(k4.clone(), v4.clone()), true);
+        assert_eq!(btree_index.get(k4.clone()), vec![v4.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k4, &v4).to_bytes()
+        );
+
+        // remove from key-value pairs (remove value)
+
+        let sync_bytes = btree_index.remove(k1.clone(), v1_2.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 5);
+        assert_eq!(btree_index.exists(k1.clone(), v1_2.clone()), false);
+        assert_eq!(btree_index.get(k1.clone()), vec![v1.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_remove(&k1, &v1_2).to_bytes()
+        );
+
+        let sync_bytes = btree_index.remove(k2.clone(), v2_3.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 5);
+        assert_eq!(btree_index.exists(k2.clone(), v2_3.clone()), false);
+        assert_eq!(btree_index.get(k2.clone()), vec![v2.clone(), v2_2.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_remove(&k2, &v2_3).to_bytes()
+        );
+
+        let sync_bytes = btree_index.remove(k0.clone(), v0.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 4);
+        assert_eq!(btree_index.exists(k0.clone(), v0.clone()), false);
+        assert_eq!(btree_index.get(k0.clone()), vec![] as Vec<Vec<u8>>);
+        assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k0).to_bytes());
+
+        // remove unavailable key-value pairs (remove value)
+
+        let (random_k, random_v) = (vec![25], vec![25]);
+        let result = btree_index.remove(random_k.clone(), random_v.clone());
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        assert_eq!(error.code(), "index_trait_remove_key_not_found");
+
+        let result = btree_index.remove(k1.clone(), v1_2.clone());
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        assert_eq!(error.code(), "index_trait_remove_value_not_found");
+
+        let result = btree_index.remove(k0.clone(), v0.clone());
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        assert_eq!(error.code(), "index_trait_remove_key_not_found");
+
+        // insert some key value pairs again (insert value)
+
+        let v3_3 = vec![3, 3, 3];
+        let sync_bytes = btree_index.insert(k3.clone(), v3_3.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 4);
+        assert_eq!(btree_index.exists(k3.clone(), v3_3.clone()), true);
+        assert_eq!(btree_index.get(k3.clone()), vec![v3.clone(), v3_3.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k3, &v3_3).to_bytes()
+        );
+
+        let v4_2 = vec![4, 4];
+        let sync_bytes = btree_index.insert(k4.clone(), v4_2.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 4);
+        assert_eq!(btree_index.exists(k4.clone(), v4_2.clone()), true);
+        assert_eq!(btree_index.get(k4.clone()), vec![v4.clone(), v4_2.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k4, &v4_2).to_bytes()
+        );
+
+        let v4_3 = vec![4, 4, 4];
+        let sync_bytes = btree_index.insert(k4.clone(), v4_3.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 4);
+        assert_eq!(btree_index.exists(k4.clone(), v4_3.clone()), true);
+        assert_eq!(
+            btree_index.get(k4.clone()),
+            vec![v4.clone(), v4_2.clone(), v4_3.clone()]
+        );
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k4, &v4_3).to_bytes()
+        );
+
+        let v4_4 = vec![4, 4, 4, 4];
+        let sync_bytes = btree_index.insert(k4.clone(), v4_4.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 4);
+        assert_eq!(btree_index.exists(k4.clone(), v4_4.clone()), true);
+        assert_eq!(
+            btree_index.get(k4.clone()),
+            vec![v4.clone(), v4_2.clone(), v4_3.clone(), v4_4.clone()]
+        );
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_insert(&k4, &v4_4).to_bytes()
+        );
+
+        // delete some keys
+
+        let sync_bytes = btree_index.delete(k1.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 3);
+        assert_eq!(btree_index.exists(k1.clone(), v1_2.clone()), false);
+        assert_eq!(btree_index.get(k1.clone()), vec![] as Vec<Vec<u8>>);
+        assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k1).to_bytes());
+
+        let sync_bytes = btree_index.delete(k2.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 2);
+        assert_eq!(btree_index.exists(k2.clone(), v2_3.clone()), false);
+        assert_eq!(btree_index.get(k2.clone()), vec![] as Vec<Vec<u8>>);
+        assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k2).to_bytes());
+
+        let sync_bytes = btree_index.delete(k3.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 1);
+        assert_eq!(btree_index.exists(k3.clone(), v3_3.clone()), false);
+        assert_eq!(btree_index.get(k3.clone()), vec![] as Vec<Vec<u8>>);
+        assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k3).to_bytes());
+
+        // delete unavailable keys
+
+        let random_k = vec![25];
+        let result = btree_index.delete(random_k.clone());
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        assert_eq!(error.code(), "index_trait_delete_key_not_found");
+        assert_eq!(btree_index.index.len(), 1);
+
+        let result = btree_index.delete(k0.clone());
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        assert_eq!(error.code(), "index_trait_delete_key_not_found");
+        assert_eq!(btree_index.index.len(), 1);
+
+        // delete key by removing all values
+
+        let sync_bytes = btree_index.remove(k4.clone(), v4.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 1);
+        assert_eq!(btree_index.exists(k4.clone(), v4.clone()), false);
+        assert_eq!(
+            btree_index.get(k4.clone()),
+            vec![v4_2.clone(), v4_3.clone(), v4_4.clone()]
+        );
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_remove(&k4, &v4).to_bytes()
+        );
+
+        let sync_bytes = btree_index.remove(k4.clone(), v4_2.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 1);
+        assert_eq!(btree_index.exists(k4.clone(), v4_2.clone()), false);
+        assert_eq!(
+            btree_index.get(k4.clone()),
+            vec![v4_3.clone(), v4_4.clone()]
+        );
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_remove(&k4, &v4_2).to_bytes()
+        );
+
+        let sync_bytes = btree_index.remove(k4.clone(), v4_3.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 1);
+        assert_eq!(btree_index.exists(k4.clone(), v4_3.clone()), false);
+        assert_eq!(btree_index.get(k4.clone()), vec![v4_4.clone()]);
+        assert_eq!(
+            sync_bytes,
+            kv::tuple::KVTuple::new_remove(&k4, &v4_3).to_bytes()
+        );
+
+        let sync_bytes = btree_index.remove(k4.clone(), v4_4.clone()).unwrap();
+        assert_eq!(btree_index.index.len(), 0);
+        assert_eq!(btree_index.exists(k4.clone(), v4_4.clone()), false);
+        assert_eq!(btree_index.get(k4.clone()), vec![] as Vec<Vec<u8>>);
+        assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k4).to_bytes());
+    }
+
     #[test]
     fn btree_index_from_bytes_and_to_back() {
         let kv_item_list = [
@@ -645,6 +917,10 @@ mod tests {
         }
     }
 
+    // ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ..
+
+    // ... ... ... ... ... ... UniqueBTreeIndex ... ... ... ... ... .
+
     #[test]
     fn unique_index_from_bytes_and_to_back() {
         let kv_item_list = [
@@ -698,6 +974,10 @@ mod tests {
             }
         }
     }
+
+    // ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ..
+
+    // ... ... ... ... ... ... HashMapIndex ... ... ... ... ... ... .
 
     #[test]
     fn hash_map_index_from_bytes_and_to_back() {
@@ -786,6 +1066,10 @@ mod tests {
         }
     }
 
+    // ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ..
+
+    // ... ... ... ... ... ... UniqueHashMapIndex ... ... ... ... ...
+
     #[test]
     fn unique_hash_map_index_from_bytes_and_to_back() {
         let kv_item_list = [
@@ -843,4 +1127,6 @@ mod tests {
             }
         }
     }
+
+    // ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ..
 }

@@ -16,6 +16,14 @@ pub fn index_trait_remove_key_not_found() -> Error {
     )
 }
 
+pub fn index_trait_delete_key_not_found() -> Error {
+    Error::new(
+        ErrorType::Happens,
+        "index_trait_delete_key_not_found",
+        Some("The key was not found to delete".to_string()),
+    )
+}
+
 pub fn btree_index_from_bytes_delete_key_not_found() -> Error {
     Error::new(
         ErrorType::Unexpected,
