@@ -1021,7 +1021,10 @@ mod tests {
         let sync_bytes = hash_map_index.insert(k1.clone(), v1_2.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 2);
         assert_eq!(hash_map_index.exists(k1.clone(), v1_2.clone()), true);
-        assert_eq!(hash_map_index.get(k1.clone()), vec![v1.clone(), v1_2.clone()]);
+        assert_eq!(
+            hash_map_index.get(k1.clone()),
+            vec![v1.clone(), v1_2.clone()]
+        );
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_insert(&k1, &v1_2).to_bytes()
@@ -1041,7 +1044,10 @@ mod tests {
         let sync_bytes = hash_map_index.insert(k2.clone(), v2_2.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 3);
         assert_eq!(hash_map_index.exists(k2.clone(), v2_2.clone()), true);
-        assert_eq!(hash_map_index.get(k2.clone()), vec![v2.clone(), v2_2.clone()]);
+        assert_eq!(
+            hash_map_index.get(k2.clone()),
+            vec![v2.clone(), v2_2.clone()]
+        );
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_insert(&k2, &v2_2).to_bytes()
@@ -1074,7 +1080,10 @@ mod tests {
         let sync_bytes = hash_map_index.insert(k3.clone(), v3_2.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 4);
         assert_eq!(hash_map_index.exists(k3.clone(), v3_2.clone()), true);
-        assert_eq!(hash_map_index.get(k3.clone()), vec![v3.clone(), v3_2.clone()]);
+        assert_eq!(
+            hash_map_index.get(k3.clone()),
+            vec![v3.clone(), v3_2.clone()]
+        );
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_insert(&k3, &v3_2).to_bytes()
@@ -1104,7 +1113,10 @@ mod tests {
         let sync_bytes = hash_map_index.remove(k2.clone(), v2_3.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 5);
         assert_eq!(hash_map_index.exists(k2.clone(), v2_3.clone()), false);
-        assert_eq!(hash_map_index.get(k2.clone()), vec![v2.clone(), v2_2.clone()]);
+        assert_eq!(
+            hash_map_index.get(k2.clone()),
+            vec![v2.clone(), v2_2.clone()]
+        );
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_remove(&k2, &v2_3).to_bytes()
@@ -1140,7 +1152,10 @@ mod tests {
         let sync_bytes = hash_map_index.insert(k3.clone(), v3_3.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 4);
         assert_eq!(hash_map_index.exists(k3.clone(), v3_3.clone()), true);
-        assert_eq!(hash_map_index.get(k3.clone()), vec![v3.clone(), v3_3.clone()]);
+        assert_eq!(
+            hash_map_index.get(k3.clone()),
+            vec![v3.clone(), v3_3.clone()]
+        );
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_insert(&k3, &v3_3).to_bytes()
@@ -1150,7 +1165,10 @@ mod tests {
         let sync_bytes = hash_map_index.insert(k4.clone(), v4_2.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 4);
         assert_eq!(hash_map_index.exists(k4.clone(), v4_2.clone()), true);
-        assert_eq!(hash_map_index.get(k4.clone()), vec![v4.clone(), v4_2.clone()]);
+        assert_eq!(
+            hash_map_index.get(k4.clone()),
+            vec![v4.clone(), v4_2.clone()]
+        );
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_insert(&k4, &v4_2).to_bytes()
