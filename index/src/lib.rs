@@ -932,6 +932,156 @@ mod tests {
     // ... ... ... ... ... ... UniqueBTreeIndex ... ... ... ... ... .
 
     #[test]
+    fn unique_btree_index_new() {
+        let mut unique_btree_index: UniqueBTreeIndex = UniqueBTreeIndex::from_bytes(&[]).unwrap();
+
+        assert_eq!(unique_btree_index.index.len(), 0);
+
+        // test insert
+
+        fn test_set_kv(
+            unique_btree_index: &mut UniqueBTreeIndex,
+            key: &[u8],
+            value: &[u8],
+            expect_index_len: usize,
+        ) {
+            let insert_result = unique_btree_index.set(key.to_vec(), value.to_vec(), false);
+            assert!(insert_result.is_ok());
+            let sync_bytes = insert_result.unwrap();
+            assert_eq!(
+                sync_bytes,
+                kv::tuple::KVTuple::new_insert(key, value).to_bytes()
+            );
+            assert_eq!(unique_btree_index.index.len(), expect_index_len);
+
+            let exists = unique_btree_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, true);
+            let get_result = unique_btree_index.get(key.to_vec());
+            assert_eq!(get_result, Some(value.to_vec()));
+
+            let insert_result = unique_btree_index.set(key.to_vec(), value.to_vec(), false);
+            assert!(insert_result.is_err());
+            assert_eq!(
+                insert_result.unwrap_err().code(),
+                "unique_index_trait_set_key_occupied"
+            );
+            assert_eq!(unique_btree_index.index.len(), expect_index_len);
+
+            let exists = unique_btree_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, true);
+            let get_result = unique_btree_index.get(key.to_vec());
+            assert_eq!(get_result, Some(value.to_vec()));
+
+            let insert_result = unique_btree_index.set(key.to_vec(), value.to_vec(), true);
+            assert!(insert_result.is_ok());
+            let sync_bytes = insert_result.unwrap();
+            assert_eq!(
+                sync_bytes,
+                kv::tuple::KVTuple::new_insert(key, value).to_bytes()
+            );
+            assert_eq!(unique_btree_index.index.len(), expect_index_len);
+
+            let exists = unique_btree_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, true);
+            let get_result = unique_btree_index.get(key.to_vec());
+            assert_eq!(get_result, Some(value.to_vec()));
+        }
+
+        test_set_kv(
+            &mut unique_btree_index,
+            "One".as_bytes(),
+            "एक".as_bytes(),
+            1,
+        );
+        test_set_kv(
+            &mut unique_btree_index,
+            "Two".as_bytes(),
+            "दो".as_bytes(),
+            2,
+        );
+        test_set_kv(
+            &mut unique_btree_index,
+            "Three".as_bytes(),
+            "तीन".as_bytes(),
+            3,
+        );
+        test_set_kv(
+            &mut unique_btree_index,
+            "Four".as_bytes(),
+            "चार".as_bytes(),
+            4,
+        );
+        test_set_kv(
+            &mut unique_btree_index,
+            "Five".as_bytes(),
+            "पाँच".as_bytes(),
+            5,
+        );
+
+        fn test_delete_kv(
+            unique_btree_index: &mut UniqueBTreeIndex,
+            key: &[u8],
+            value: &[u8],
+            expect_index_len: usize,
+        ) {
+            let exists = unique_btree_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, true);
+            let get_result = unique_btree_index.get(key.to_vec());
+            assert_eq!(get_result, Some(value.to_vec()));
+
+            let delete_result = unique_btree_index.delete(key.to_vec());
+            assert!(delete_result.is_ok());
+            let sync_bytes = delete_result.unwrap();
+            assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(key).to_bytes());
+            assert_eq!(unique_btree_index.index.len(), expect_index_len);
+
+            let exists = unique_btree_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, false);
+            let get_result = unique_btree_index.get(key.to_vec());
+            assert_eq!(get_result, None);
+
+            let delete_result = unique_btree_index.delete(key.to_vec());
+            assert!(delete_result.is_err());
+            assert_eq!(
+                delete_result.unwrap_err().code(),
+                "index_trait_delete_key_not_found"
+            );
+            assert_eq!(unique_btree_index.index.len(), expect_index_len);
+        }
+
+        test_delete_kv(
+            &mut unique_btree_index,
+            "One".as_bytes(),
+            "एक".as_bytes(),
+            4,
+        );
+        test_delete_kv(
+            &mut unique_btree_index,
+            "Two".as_bytes(),
+            "दो".as_bytes(),
+            3,
+        );
+        test_delete_kv(
+            &mut unique_btree_index,
+            "Three".as_bytes(),
+            "तीन".as_bytes(),
+            2,
+        );
+        test_delete_kv(
+            &mut unique_btree_index,
+            "Four".as_bytes(),
+            "चार".as_bytes(),
+            1,
+        );
+        test_delete_kv(
+            &mut unique_btree_index,
+            "Five".as_bytes(),
+            "पाँच".as_bytes(),
+            0,
+        );
+    }
+
+    #[test]
     fn unique_index_from_bytes_and_to_back() {
         let kv_item_list = [
             ("One".as_bytes().to_vec(), "एक".as_bytes().to_vec()),
@@ -1367,6 +1517,156 @@ mod tests {
     // ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ..
 
     // ... ... ... ... ... ... UniqueHashMapIndex ... ... ... ... ...
+
+    #[test]
+    fn unique_hash_index_new() {
+        let mut unique_hash_map_index = UniqueHashMapIndex::from_bytes(&[]).unwrap();
+
+        assert_eq!(unique_hash_map_index.index.len(), 0);
+
+        // test insert
+
+        fn test_set_kv(
+            unique_hash_map_index: &mut UniqueHashMapIndex,
+            key: &[u8],
+            value: &[u8],
+            expect_index_len: usize,
+        ) {
+            let insert_result = unique_hash_map_index.set(key.to_vec(), value.to_vec(), false);
+            assert!(insert_result.is_ok());
+            let sync_bytes = insert_result.unwrap();
+            assert_eq!(
+                sync_bytes,
+                kv::tuple::KVTuple::new_insert(key, value).to_bytes()
+            );
+            assert_eq!(unique_hash_map_index.index.len(), expect_index_len);
+
+            let exists = unique_hash_map_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, true);
+            let get_result = unique_hash_map_index.get(key.to_vec());
+            assert_eq!(get_result, Some(value.to_vec()));
+
+            let insert_result = unique_hash_map_index.set(key.to_vec(), value.to_vec(), false);
+            assert!(insert_result.is_err());
+            assert_eq!(
+                insert_result.unwrap_err().code(),
+                "unique_index_trait_set_key_occupied"
+            );
+            assert_eq!(unique_hash_map_index.index.len(), expect_index_len);
+
+            let exists = unique_hash_map_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, true);
+            let get_result = unique_hash_map_index.get(key.to_vec());
+            assert_eq!(get_result, Some(value.to_vec()));
+
+            let insert_result = unique_hash_map_index.set(key.to_vec(), value.to_vec(), true);
+            assert!(insert_result.is_ok());
+            let sync_bytes = insert_result.unwrap();
+            assert_eq!(
+                sync_bytes,
+                kv::tuple::KVTuple::new_insert(key, value).to_bytes()
+            );
+            assert_eq!(unique_hash_map_index.index.len(), expect_index_len);
+
+            let exists = unique_hash_map_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, true);
+            let get_result = unique_hash_map_index.get(key.to_vec());
+            assert_eq!(get_result, Some(value.to_vec()));
+        }
+
+        test_set_kv(
+            &mut unique_hash_map_index,
+            "One".as_bytes(),
+            "एक".as_bytes(),
+            1,
+        );
+        test_set_kv(
+            &mut unique_hash_map_index,
+            "Two".as_bytes(),
+            "दो".as_bytes(),
+            2,
+        );
+        test_set_kv(
+            &mut unique_hash_map_index,
+            "Three".as_bytes(),
+            "तीन".as_bytes(),
+            3,
+        );
+        test_set_kv(
+            &mut unique_hash_map_index,
+            "Four".as_bytes(),
+            "चार".as_bytes(),
+            4,
+        );
+        test_set_kv(
+            &mut unique_hash_map_index,
+            "Five".as_bytes(),
+            "पाँच".as_bytes(),
+            5,
+        );
+
+        fn test_delete_kv(
+            unique_hash_map_index: &mut UniqueHashMapIndex,
+            key: &[u8],
+            value: &[u8],
+            expect_index_len: usize,
+        ) {
+            let exists = unique_hash_map_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, true);
+            let get_result = unique_hash_map_index.get(key.to_vec());
+            assert_eq!(get_result, Some(value.to_vec()));
+
+            let delete_result = unique_hash_map_index.delete(key.to_vec());
+            assert!(delete_result.is_ok());
+            let sync_bytes = delete_result.unwrap();
+            assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(key).to_bytes());
+            assert_eq!(unique_hash_map_index.index.len(), expect_index_len);
+
+            let exists = unique_hash_map_index.exists(key.to_vec(), value.to_vec());
+            assert_eq!(exists, false);
+            let get_result = unique_hash_map_index.get(key.to_vec());
+            assert_eq!(get_result, None);
+
+            let delete_result = unique_hash_map_index.delete(key.to_vec());
+            assert!(delete_result.is_err());
+            assert_eq!(
+                delete_result.unwrap_err().code(),
+                "index_trait_delete_key_not_found"
+            );
+            assert_eq!(unique_hash_map_index.index.len(), expect_index_len);
+        }
+
+        test_delete_kv(
+            &mut unique_hash_map_index,
+            "One".as_bytes(),
+            "एक".as_bytes(),
+            4,
+        );
+        test_delete_kv(
+            &mut unique_hash_map_index,
+            "Two".as_bytes(),
+            "दो".as_bytes(),
+            3,
+        );
+        test_delete_kv(
+            &mut unique_hash_map_index,
+            "Three".as_bytes(),
+            "तीन".as_bytes(),
+            2,
+        );
+        test_delete_kv(
+            &mut unique_hash_map_index,
+            "Four".as_bytes(),
+            "चार".as_bytes(),
+            1,
+        );
+        test_delete_kv(
+            &mut unique_hash_map_index,
+            "Five".as_bytes(),
+            "पाँच".as_bytes(),
+            0,
+        );
+    }
 
     #[test]
     fn unique_hash_map_index_from_bytes_and_to_back() {
