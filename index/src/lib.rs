@@ -363,9 +363,10 @@ impl IndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for HashMapIndex {
     }
 }
 
-impl HashMapIndex {
-    /// Parse bytes and produce a new index.
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
+impl IndexSerializationTrait<Self, HashMap<kv::tuple::KeyData, BTreeSet<kv::tuple::ValueData>>>
+    for HashMapIndex
+{
+    fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         let mut output = HashMapIndex {
             index: HashMap::new(),
         };
@@ -421,8 +422,7 @@ impl HashMapIndex {
         Ok(output)
     }
 
-    /// Serialize the index to bytes.
-    pub fn to_bytes(&self) -> Vec<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         for (key, value_set) in self.index.iter() {
             for value in value_set.iter() {
@@ -431,6 +431,20 @@ impl HashMapIndex {
             }
         }
         bytes
+    }
+}
+
+impl IndexCloneTrait<Self, HashMap<kv::tuple::KeyData, BTreeSet<kv::tuple::ValueData>>>
+    for HashMapIndex
+{
+    fn clone(&self) -> Self {
+        HashMapIndex {
+            index: self.index.clone(),
+        }
+    }
+
+    fn index_clone(&self) -> HashMap<kv::tuple::KeyData, BTreeSet<kv::tuple::ValueData>> {
+        self.index.clone()
     }
 }
 
@@ -487,14 +501,10 @@ impl UniqueIndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for UniqueHashMa
     }
 }
 
-impl UniqueHashMapIndex {
-    pub fn new() -> UniqueHashMapIndex {
-        UniqueHashMapIndex {
-            index: HashMap::new(),
-        }
-    }
-    /// Parse bytes and produce a new index.
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
+impl IndexSerializationTrait<Self, HashMap<kv::tuple::KeyData, kv::tuple::ValueData>>
+    for UniqueHashMapIndex
+{
+    fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         let mut output = UniqueHashMapIndex {
             index: HashMap::new(),
         };
@@ -550,14 +560,27 @@ impl UniqueHashMapIndex {
         Ok(output)
     }
 
-    /// Serialize the index to bytes.
-    pub fn to_bytes(&self) -> Vec<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         for (key, value) in self.index.iter() {
             let tuple = kv::tuple::KVTuple::new_insert(key, value);
             bytes.append(&mut tuple.to_bytes());
         }
         bytes
+    }
+}
+
+impl IndexCloneTrait<Self, HashMap<kv::tuple::KeyData, kv::tuple::ValueData>>
+    for UniqueHashMapIndex
+{
+    fn clone(&self) -> Self {
+        UniqueHashMapIndex {
+            index: self.index.clone(),
+        }
+    }
+
+    fn index_clone(&self) -> HashMap<kv::tuple::KeyData, kv::tuple::ValueData> {
+        self.index.clone()
     }
 }
 
