@@ -21,6 +21,9 @@ impl Error {
             description: description.unwrap_or("".to_string()),
         }
     }
+    pub fn code(&self) -> &str {
+        &self.code
+    }
 }
 
 // add fmt::Debug trait to Error struct
