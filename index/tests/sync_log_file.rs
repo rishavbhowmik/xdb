@@ -557,3 +557,5 @@ fn unique_hash_map_index_new_log_file() {
     // clean up
     remove_dir_contents(tmp_dir_path);
 }
+
+// ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ..
