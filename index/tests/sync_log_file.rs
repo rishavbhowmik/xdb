@@ -297,7 +297,7 @@ fn unqiue_btree_index_sync_new_log_file() {
 // ... ... ... ... ... ... HashMapIndex ... ... ... ... ... ... .
 
 #[test]
-fn hash_map_index_test() {
+fn hash_map_index_new_log_file() {
     fn insert_tuple_test(
         hash_map_index: &mut HashMapIndex,
         tmp_file_path: &str,
@@ -457,7 +457,7 @@ fn hash_map_index_test() {
 // ... ... ... ... ... ... UniqueHashMapIndex ... ... ... ... ...
 
 #[test]
-fn test_unique_hash_map_index() {
+fn unique_hash_map_index_new_log_file() {
     fn insert_tuple_test(
         hash_map_index: &mut UniqueHashMapIndex,
         tmp_file_path: &str,
