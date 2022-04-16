@@ -91,7 +91,7 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, BTreeSet<kv::tup
                             output.delete(key)?;
                         }
                         None => {
-                            return Err(index_errors::btree_index_from_bytes_delete_key_not_found())
+                            return Err(index_errors::btree_index_from_bytes_delete_key_not_provided())
                         }
                     }
                 }
@@ -104,7 +104,7 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, BTreeSet<kv::tup
                         }
                         _ => {
                             return Err(
-                                index_errors::btree_index_from_bytes_delete_key_or_value_not_found(
+                                index_errors::btree_index_from_bytes_delete_key_or_value_not_provided(
                                 ),
                             )
                         }
@@ -121,7 +121,7 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, BTreeSet<kv::tup
                         }
                         _ => {
                             return Err(
-                                index_errors::btree_index_from_bytes_delete_key_or_value_not_found(
+                                index_errors::btree_index_from_bytes_delete_key_or_value_not_provided(
                                 ),
                             )
                         }
@@ -236,7 +236,7 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, kv::tuple::Value
                         }
                         None => {
                             return Err(
-                                index_errors::unique_btree_index_from_bytes_delete_key_not_found(),
+                                index_errors::unique_btree_index_from_bytes_delete_key_not_provided(),
                             );
                         }
                     }
@@ -249,7 +249,7 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, kv::tuple::Value
                             output.set(key, value, true)?;
                         }
                         _ => {
-                            return Err(index_errors::unique_btree_index_from_bytes_insert_key_or_value_not_found());
+                            return Err(index_errors::unique_btree_index_from_bytes_insert_key_or_value_not_provided());
                         }
                     }
                 }
@@ -263,7 +263,7 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, kv::tuple::Value
                             }
                         }
                         _ => {
-                            return Err(index_errors::unique_btree_index_from_bytes_remove_key_or_value_not_found());
+                            return Err(index_errors::unique_btree_index_from_bytes_remove_key_or_value_not_provided());
                         }
                     }
                 }
@@ -384,7 +384,7 @@ impl IndexSerializationTrait<Self, HashMap<kv::tuple::KeyData, BTreeSet<kv::tupl
                         }
                         None => {
                             return Err(
-                                index_errors::hash_map_index_from_bytes_delete_key_not_found(),
+                                index_errors::hash_map_index_from_bytes_delete_key_not_provided(),
                             );
                         }
                     }
@@ -397,7 +397,7 @@ impl IndexSerializationTrait<Self, HashMap<kv::tuple::KeyData, BTreeSet<kv::tupl
                             output.insert(key, value)?;
                         }
                         _ => {
-                            return Err(index_errors::hash_map_index_from_bytes_delete_key_or_value_not_found());
+                            return Err(index_errors::hash_map_index_from_bytes_delete_key_or_value_not_provided());
                         }
                     }
                 }
@@ -411,7 +411,7 @@ impl IndexSerializationTrait<Self, HashMap<kv::tuple::KeyData, BTreeSet<kv::tupl
                             }
                         }
                         _ => {
-                            return Err(index_errors::hash_map_index_from_bytes_remove_key_or_value_not_found());
+                            return Err(index_errors::hash_map_index_from_bytes_remove_key_or_value_not_provided());
                         }
                     }
                 }
@@ -521,7 +521,7 @@ impl IndexSerializationTrait<Self, HashMap<kv::tuple::KeyData, kv::tuple::ValueD
                         }
                         None => {
                             return Err(
-                                index_errors::unique_hash_map_index_from_bytes_delete_key_not_found(
+                                index_errors::unique_hash_map_index_from_bytes_delete_key_not_provided(
                                 ),
                             );
                         }
@@ -535,7 +535,7 @@ impl IndexSerializationTrait<Self, HashMap<kv::tuple::KeyData, kv::tuple::ValueD
                             output.set(key, value, true)?;
                         }
                         _ => {
-                            return Err(index_errors::unique_hash_map_index_from_bytes_insert_key_or_value_not_found());
+                            return Err(index_errors::unique_hash_map_index_from_bytes_insert_key_or_value_not_provided());
                         }
                     }
                 }
@@ -549,7 +549,7 @@ impl IndexSerializationTrait<Self, HashMap<kv::tuple::KeyData, kv::tuple::ValueD
                             }
                         }
                         _ => {
-                            return Err(index_errors::unique_hash_map_index_from_bytes_remove_key_or_value_not_found());
+                            return Err(index_errors::unique_hash_map_index_from_bytes_remove_key_or_value_not_provided());
                         }
                     }
                 }
