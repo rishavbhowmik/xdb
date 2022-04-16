@@ -91,7 +91,9 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, BTreeSet<kv::tup
                             output.delete(key)?;
                         }
                         None => {
-                            return Err(index_errors::btree_index_from_bytes_delete_key_not_provided())
+                            return Err(
+                                index_errors::btree_index_from_bytes_delete_key_not_provided(),
+                            )
                         }
                     }
                 }
@@ -102,12 +104,9 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, BTreeSet<kv::tup
                         (Some(key), Some(value)) => {
                             output.insert(key, value)?;
                         }
-                        _ => {
-                            return Err(
-                                index_errors::btree_index_from_bytes_delete_key_or_value_not_provided(
-                                ),
-                            )
-                        }
+                        _ => return Err(
+                            index_errors::btree_index_from_bytes_delete_key_or_value_not_provided(),
+                        ),
                     }
                 }
                 kv::tuple::IndexCrud::REMOVE => {
@@ -119,12 +118,9 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, BTreeSet<kv::tup
                                 output.remove(key, value)?;
                             }
                         }
-                        _ => {
-                            return Err(
-                                index_errors::btree_index_from_bytes_delete_key_or_value_not_provided(
-                                ),
-                            )
-                        }
+                        _ => return Err(
+                            index_errors::btree_index_from_bytes_delete_key_or_value_not_provided(),
+                        ),
                     }
                 }
                 _ => continue,
@@ -236,7 +232,8 @@ impl IndexSerializationTrait<Self, BTreeMap<kv::tuple::KeyData, kv::tuple::Value
                         }
                         None => {
                             return Err(
-                                index_errors::unique_btree_index_from_bytes_delete_key_not_provided(),
+                                index_errors::unique_btree_index_from_bytes_delete_key_not_provided(
+                                ),
                             );
                         }
                     }
