@@ -143,12 +143,14 @@ let write_thread = thread::spawn(move || {
     }
 });
 
-// insert a key and value pair
+// insert a key-value pair
 let common_uuid = 11 as UUID;
 index_write_tx.send((common_uuid, WRITE_ENUM::INSERT, "One Plus One".as_bytes().to_vec(), "Two".as_bytes().to_vec())).unwrap();
 if let Ok(write_res) = index_write_res_rx.recv() {
-    assert_eq!(write_res.0, common_uuid);
-    assert!(write_res.1.len());
+    let (uuid, index_log_tuple) = write_res;
+    assert_eq!(uuid, common_uuid);
+    assert!(index_log_tuple.len() > 0);
+    // append index_log_tuple to index log
 }
 ```
 
