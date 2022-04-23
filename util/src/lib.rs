@@ -28,9 +28,9 @@ pub fn make_chunks(data: &[u8], chunk_len: usize) -> (usize, std::slice::Chunks<
     let chunks = data.chunks(chunk_len);
     let blocks_required = data.len() / chunk_len as usize
         + if (data.len() % chunk_len as usize) > 0 {
-            1 as usize
+            1
         } else {
-            0 as usize
+            0
         }; // same as chunks.clone().count()
     (blocks_required, chunks)
 }

@@ -159,7 +159,7 @@ impl Storage {
             ));
         }
         let file_writer = file_writer_result.unwrap();
-        let write_pointer = 0 as usize;
+        let write_pointer = 0;
         Ok((file_writer, write_pointer))
     }
     /// Open storage file for reading
@@ -173,7 +173,7 @@ impl Storage {
             ));
         }
         let file_reader = file_reader_result.unwrap();
-        let read_pointer = 0 as usize;
+        let read_pointer = 0;
         Ok((file_reader, read_pointer))
     }
 
