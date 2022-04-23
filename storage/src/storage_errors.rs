@@ -13,6 +13,8 @@ pub fn open_file_writer_open_file(io_error: std::io::Error) -> Error {
     )
 }
 
+// .... .... Storage::open_file_reader .... ....
+
 pub fn open_file_reader_open_file(io_error: std::io::Error) -> Error {
     Error::new(
         ErrorType::Happens,

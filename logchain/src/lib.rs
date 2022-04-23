@@ -17,6 +17,23 @@ pub fn make_segment_payload_list(
     let block_len = storage.block_len() as usize;
     let chunk_len = block_len - BLOCK_INDEX_SIZE;
     let (blocks_required, chunks) = make_chunks(data, chunk_len);
+    if blocks_required == 0 {
+        let block_indexes = storage.search_block_allocation_indexes(1 as BlockIndex);
+        if block_indexes.is_empty() {
+            return Err(
+                logchain_errors::make_segment_payload_list_insufficient_blocks(blocks_required),
+            );
+        }
+        let block_index = block_indexes[0];
+        return Ok((
+            vec![(
+                block_indexes[0],
+                [data, &block_index_to_buffer(LAST_NEXT_BLOCK_INDEX)].concat(),
+            )],
+            block_index,
+            block_index,
+        ));
+    }
     let block_indexes = storage.search_block_allocation_indexes(blocks_required as BlockIndex);
     if block_indexes.len() < blocks_required {
         return Err(
