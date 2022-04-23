@@ -25,8 +25,7 @@ fn remove_dir_contents(path: std::path::PathBuf) {
             remove_file(path).unwrap();
         }
     }
-    let path_copy = path.clone();
-    remove_dir(path_copy).unwrap();
+    remove_dir(path).unwrap();
 }
 
 #[test]
@@ -55,9 +54,7 @@ fn storage_open_new_file() {
     let actual = read_full_file(tmp_file_path);
     assert_eq!(expected, actual);
     // write to block 0
-    let block_0_data = vec![
-        1 as u8, 2 as u8, 3 as u8, 4 as u8, 5 as u8, 6 as u8, 7 as u8, 8 as u8,
-    ];
+    let block_0_data = vec![1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8];
     let result = storage.write_block(0, &block_0_data);
     assert_eq!(result.is_ok(), true);
     let write_ptr = result.unwrap();
@@ -66,9 +63,7 @@ fn storage_open_new_file() {
     let actual = read_full_file(tmp_file_path);
     assert_eq!(expected, actual);
     // write to block 1
-    let block_1_data = vec![
-        9 as u8, 10 as u8, 11 as u8, 12 as u8, 13 as u8, 14 as u8, 15 as u8, 16 as u8,
-    ];
+    let block_1_data = vec![9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8];
     let result = storage.write_block(1, &block_1_data);
     assert_eq!(result.is_ok(), true);
     let write_ptr = result.unwrap();
@@ -77,7 +72,7 @@ fn storage_open_new_file() {
     let actual = read_full_file(tmp_file_path);
     assert_eq!(expected, actual);
     // write to block 2
-    let block_2_data = vec![17 as u8, 18 as u8, 19 as u8, 20 as u8];
+    let block_2_data = vec![17_u8, 18_u8, 19_u8, 20_u8];
     let result = storage.write_block(2, &block_2_data);
     assert_eq!(result.is_ok(), true);
     let write_ptr = result.unwrap();
@@ -143,7 +138,7 @@ fn storage_open_new_file() {
     assert_eq!(expected, actual);
 
     // clear clutter
-    remove_dir_contents(std::path::PathBuf::from(tmp_dir_path));
+    remove_dir_contents(tmp_dir_path);
 }
 
 #[test]
@@ -185,7 +180,7 @@ fn storage_open_existing_file1() {
     assert_eq!(result.is_ok(), true);
     let (read_ptr, actual_data) = result.unwrap();
     assert_eq!(read_ptr, 36); // 4 + (4 + 8) * 2 + 4 + 4
-    let block_2_data = vec![17 as u8, 18 as u8, 19 as u8, 20 as u8];
+    let block_2_data = vec![17_u8, 18_u8, 19_u8, 20_u8];
     assert_eq!(actual_data, block_2_data); // no data
                                            // read from block 3
     let result = storage.read_block(3);
@@ -195,7 +190,7 @@ fn storage_open_existing_file1() {
     assert_eq!(actual_data.len(), 0); // no data
 
     // write to block 3
-    let block_3_data = vec![3 as u8, 9 as u8, 27 as u8];
+    let block_3_data = vec![3_u8, 9_u8, 27_u8];
     let result = storage.write_block(3, &block_3_data);
     assert_eq!(result.is_ok(), true);
     let write_ptr = result.unwrap();
@@ -204,7 +199,7 @@ fn storage_open_existing_file1() {
     let actual = read_full_file(tmp_file_path);
     assert_eq!(expected, actual);
     // write to block 4
-    let block_4_data = vec![4 as u8, 8 as u8, 16 as u8, 32 as u8];
+    let block_4_data = vec![4_u8, 8_u8, 16_u8, 32_u8];
     let result = storage.write_block(4, &block_4_data);
     assert_eq!(result.is_ok(), true);
     let write_ptr = result.unwrap();
@@ -213,7 +208,7 @@ fn storage_open_existing_file1() {
     let actual = read_full_file(tmp_file_path);
     assert_eq!(expected, actual);
     // write to block 5
-    let block_5_data = vec![5 as u8, 10 as u8, 20 as u8, 40 as u8, 80 as u8];
+    let block_5_data = vec![5_u8, 10_u8, 20_u8, 40_u8, 80_u8];
     let result = storage.write_block(5, &block_5_data);
     assert_eq!(result.is_ok(), true);
     let write_ptr = result.unwrap();
@@ -238,7 +233,7 @@ fn storage_open_existing_file1() {
     let actual = read_full_file(tmp_file_path);
     assert_eq!(expected, actual);
     // clear clutter
-    remove_dir_contents(std::path::PathBuf::from(tmp_dir_path));
+    remove_dir_contents(tmp_dir_path);
 }
 
 #[test]
@@ -263,7 +258,7 @@ fn storage_open_existing_file1_test_abstract_fn() {
     let storage = Storage::open(String::from(tmp_file_path)).unwrap();
     // available free blocks: {0, 1}, endblock: 2
     // - search for 1 block
-    let expected = vec![0 as u32];
+    let expected = vec![0_u32];
     let actual = storage.search_block_allocation_indexes(1);
     assert_eq!(expected, actual);
     // - search for 2 blocks

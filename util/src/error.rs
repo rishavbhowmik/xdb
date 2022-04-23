@@ -16,9 +16,9 @@ pub struct Error {
 impl Error {
     pub fn new(error_type: ErrorType, code: &str, description: Option<String>) -> Self {
         Error {
-            error_type: error_type,
+            error_type,
             code: code.to_string(),
-            description: description.unwrap_or("".to_string()),
+            description: description.unwrap_or_else(|| "".to_string()),
         }
     }
     pub fn code(&self) -> &str {
@@ -36,14 +36,14 @@ impl fmt::Debug for Error {
             ErrorType::Critical => "Critical",
             ErrorType::Unexpected => "Unexpected",
         };
-        if self.description.len() > 0 {
+        if self.description.is_empty() {
+            write!(f, "{}\nCode: {}", error_type, self.code)
+        } else {
             write!(
                 f,
                 "{}\nCode: {}\nDescription: {}",
                 error_type, self.code, self.description
             )
-        } else {
-            write!(f, "{}\nCode: {}", error_type, self.code)
         }
     }
 }

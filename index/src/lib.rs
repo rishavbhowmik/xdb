@@ -191,18 +191,18 @@ impl UniqueIndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for UniqueBTreeI
             true => {
                 self.index.insert(key.clone(), value.clone());
                 let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-                return Ok(tuple.to_bytes());
+                Ok(tuple.to_bytes())
             }
             false => {
                 let entry = self.index.entry(key.clone());
                 match entry {
                     std::collections::btree_map::Entry::Occupied(_) => {
-                        return Err(index_errors::unique_index_trait_set_key_occupied());
+                        Err(index_errors::unique_index_trait_set_key_occupied())
                     }
                     std::collections::btree_map::Entry::Vacant(entry) => {
                         entry.insert(value.clone());
                         let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-                        return Ok(tuple.to_bytes());
+                        Ok(tuple.to_bytes())
                     }
                 }
             }
@@ -333,10 +333,10 @@ impl IndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for HashMapIndex {
     ) -> Result<Vec<u8>, Error> {
         self.index
             .entry(key.clone())
-            .or_insert_with(|| BTreeSet::new())
+            .or_insert_with(BTreeSet::new)
             .insert(value.clone());
         let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-        return Ok(tuple.to_bytes());
+        Ok(tuple.to_bytes())
     }
     fn remove(
         &mut self,
@@ -479,18 +479,18 @@ impl UniqueIndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for UniqueHashMa
             true => {
                 self.index.insert(key.clone(), value.clone());
                 let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-                return Ok(tuple.to_bytes());
+                Ok(tuple.to_bytes())
             }
             false => {
                 let entry = self.index.entry(key.clone());
                 match entry {
                     std::collections::hash_map::Entry::Occupied(_) => {
-                        return Err(index_errors::unique_index_trait_set_key_occupied());
+                        Err(index_errors::unique_index_trait_set_key_occupied())
                     }
                     std::collections::hash_map::Entry::Vacant(entry) => {
                         entry.insert(value.clone());
                         let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-                        return Ok(tuple.to_bytes());
+                        Ok(tuple.to_bytes())
                     }
                 }
             }
@@ -696,7 +696,7 @@ mod tests {
         let sync_bytes = btree_index.remove(k1.clone(), v1_2.clone()).unwrap();
         assert_eq!(btree_index.index.len(), 5);
         assert_eq!(btree_index.exists(k1.clone(), v1_2.clone()), false);
-        assert_eq!(btree_index.get(k1.clone()), vec![v1.clone()]);
+        assert_eq!(btree_index.get(k1.clone()), vec![v1]);
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_remove(&k1, &v1_2).to_bytes()
@@ -705,7 +705,7 @@ mod tests {
         let sync_bytes = btree_index.remove(k2.clone(), v2_3.clone()).unwrap();
         assert_eq!(btree_index.index.len(), 5);
         assert_eq!(btree_index.exists(k2.clone(), v2_3.clone()), false);
-        assert_eq!(btree_index.get(k2.clone()), vec![v2.clone(), v2_2.clone()]);
+        assert_eq!(btree_index.get(k2.clone()), vec![v2, v2_2]);
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_remove(&k2, &v2_3).to_bytes()
@@ -720,7 +720,7 @@ mod tests {
         // remove unavailable key-value pairs (remove value)
 
         let (random_k, random_v) = (vec![25], vec![25]);
-        let result = btree_index.remove(random_k.clone(), random_v.clone());
+        let result = btree_index.remove(random_k, random_v);
         assert!(result.is_err());
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_remove_key_not_found");
@@ -730,7 +730,7 @@ mod tests {
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_remove_value_not_found");
 
-        let result = btree_index.remove(k0.clone(), v0.clone());
+        let result = btree_index.remove(k0.clone(), v0);
         assert!(result.is_err());
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_remove_key_not_found");
@@ -741,7 +741,7 @@ mod tests {
         let sync_bytes = btree_index.insert(k3.clone(), v3_3.clone()).unwrap();
         assert_eq!(btree_index.index.len(), 4);
         assert_eq!(btree_index.exists(k3.clone(), v3_3.clone()), true);
-        assert_eq!(btree_index.get(k3.clone()), vec![v3.clone(), v3_3.clone()]);
+        assert_eq!(btree_index.get(k3.clone()), vec![v3, v3_3.clone()]);
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_insert(&k3, &v3_3).to_bytes()
@@ -787,32 +787,32 @@ mod tests {
 
         let sync_bytes = btree_index.delete(k1.clone()).unwrap();
         assert_eq!(btree_index.index.len(), 3);
-        assert_eq!(btree_index.exists(k1.clone(), v1_2.clone()), false);
+        assert_eq!(btree_index.exists(k1.clone(), v1_2), false);
         assert_eq!(btree_index.get(k1.clone()), vec![] as Vec<Vec<u8>>);
         assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k1).to_bytes());
 
         let sync_bytes = btree_index.delete(k2.clone()).unwrap();
         assert_eq!(btree_index.index.len(), 2);
-        assert_eq!(btree_index.exists(k2.clone(), v2_3.clone()), false);
+        assert_eq!(btree_index.exists(k2.clone(), v2_3), false);
         assert_eq!(btree_index.get(k2.clone()), vec![] as Vec<Vec<u8>>);
         assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k2).to_bytes());
 
         let sync_bytes = btree_index.delete(k3.clone()).unwrap();
         assert_eq!(btree_index.index.len(), 1);
-        assert_eq!(btree_index.exists(k3.clone(), v3_3.clone()), false);
+        assert_eq!(btree_index.exists(k3.clone(), v3_3), false);
         assert_eq!(btree_index.get(k3.clone()), vec![] as Vec<Vec<u8>>);
         assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k3).to_bytes());
 
         // delete unavailable keys
 
         let random_k = vec![25];
-        let result = btree_index.delete(random_k.clone());
+        let result = btree_index.delete(random_k);
         assert!(result.is_err());
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_delete_key_not_found");
         assert_eq!(btree_index.index.len(), 1);
 
-        let result = btree_index.delete(k0.clone());
+        let result = btree_index.delete(k0);
         assert!(result.is_err());
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_delete_key_not_found");
@@ -855,7 +855,7 @@ mod tests {
 
         let sync_bytes = btree_index.remove(k4.clone(), v4_4.clone()).unwrap();
         assert_eq!(btree_index.index.len(), 0);
-        assert_eq!(btree_index.exists(k4.clone(), v4_4.clone()), false);
+        assert_eq!(btree_index.exists(k4.clone(), v4_4), false);
         assert_eq!(btree_index.get(k4.clone()), vec![] as Vec<Vec<u8>>);
         assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k4).to_bytes());
     }
@@ -1274,7 +1274,7 @@ mod tests {
         let sync_bytes = hash_map_index.remove(k1.clone(), v1_2.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 5);
         assert_eq!(hash_map_index.exists(k1.clone(), v1_2.clone()), false);
-        assert_eq!(hash_map_index.get(k1.clone()), vec![v1.clone()]);
+        assert_eq!(hash_map_index.get(k1.clone()), vec![v1]);
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_remove(&k1, &v1_2).to_bytes()
@@ -1283,10 +1283,7 @@ mod tests {
         let sync_bytes = hash_map_index.remove(k2.clone(), v2_3.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 5);
         assert_eq!(hash_map_index.exists(k2.clone(), v2_3.clone()), false);
-        assert_eq!(
-            hash_map_index.get(k2.clone()),
-            vec![v2.clone(), v2_2.clone()]
-        );
+        assert_eq!(hash_map_index.get(k2.clone()), vec![v2, v2_2]);
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_remove(&k2, &v2_3).to_bytes()
@@ -1301,7 +1298,7 @@ mod tests {
         // remove unavailable key-value pairs (remove value)
 
         let (random_k, random_v) = (vec![25], vec![25]);
-        let result = hash_map_index.remove(random_k.clone(), random_v.clone());
+        let result = hash_map_index.remove(random_k, random_v);
         assert!(result.is_err());
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_remove_key_not_found");
@@ -1311,7 +1308,7 @@ mod tests {
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_remove_value_not_found");
 
-        let result = hash_map_index.remove(k0.clone(), v0.clone());
+        let result = hash_map_index.remove(k0.clone(), v0);
         assert!(result.is_err());
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_remove_key_not_found");
@@ -1322,10 +1319,7 @@ mod tests {
         let sync_bytes = hash_map_index.insert(k3.clone(), v3_3.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 4);
         assert_eq!(hash_map_index.exists(k3.clone(), v3_3.clone()), true);
-        assert_eq!(
-            hash_map_index.get(k3.clone()),
-            vec![v3.clone(), v3_3.clone()]
-        );
+        assert_eq!(hash_map_index.get(k3.clone()), vec![v3, v3_3.clone()]);
         assert_eq!(
             sync_bytes,
             kv::tuple::KVTuple::new_insert(&k3, &v3_3).to_bytes()
@@ -1374,32 +1368,32 @@ mod tests {
 
         let sync_bytes = hash_map_index.delete(k1.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 3);
-        assert_eq!(hash_map_index.exists(k1.clone(), v1_2.clone()), false);
+        assert_eq!(hash_map_index.exists(k1.clone(), v1_2), false);
         assert_eq!(hash_map_index.get(k1.clone()), vec![] as Vec<Vec<u8>>);
         assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k1).to_bytes());
 
         let sync_bytes = hash_map_index.delete(k2.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 2);
-        assert_eq!(hash_map_index.exists(k2.clone(), v2_3.clone()), false);
+        assert_eq!(hash_map_index.exists(k2.clone(), v2_3), false);
         assert_eq!(hash_map_index.get(k2.clone()), vec![] as Vec<Vec<u8>>);
         assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k2).to_bytes());
 
         let sync_bytes = hash_map_index.delete(k3.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 1);
-        assert_eq!(hash_map_index.exists(k3.clone(), v3_3.clone()), false);
+        assert_eq!(hash_map_index.exists(k3.clone(), v3_3), false);
         assert_eq!(hash_map_index.get(k3.clone()), vec![] as Vec<Vec<u8>>);
         assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k3).to_bytes());
 
         // delete unavailable keys
 
         let random_k = vec![25];
-        let result = hash_map_index.delete(random_k.clone());
+        let result = hash_map_index.delete(random_k);
         assert!(result.is_err());
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_delete_key_not_found");
         assert_eq!(hash_map_index.index.len(), 1);
 
-        let result = hash_map_index.delete(k0.clone());
+        let result = hash_map_index.delete(k0);
         assert!(result.is_err());
         let error = result.unwrap_err();
         assert_eq!(error.code(), "index_trait_delete_key_not_found");
@@ -1442,7 +1436,7 @@ mod tests {
 
         let sync_bytes = hash_map_index.remove(k4.clone(), v4_4.clone()).unwrap();
         assert_eq!(hash_map_index.index.len(), 0);
-        assert_eq!(hash_map_index.exists(k4.clone(), v4_4.clone()), false);
+        assert_eq!(hash_map_index.exists(k4.clone(), v4_4), false);
         assert_eq!(hash_map_index.get(k4.clone()), vec![] as Vec<Vec<u8>>);
         assert_eq!(sync_bytes, kv::tuple::KVTuple::new_delete(&k4).to_bytes());
     }
