@@ -191,18 +191,18 @@ impl UniqueIndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for UniqueBTreeI
             true => {
                 self.index.insert(key.clone(), value.clone());
                 let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-                return Ok(tuple.to_bytes());
+                Ok(tuple.to_bytes())
             }
             false => {
                 let entry = self.index.entry(key.clone());
                 match entry {
                     std::collections::btree_map::Entry::Occupied(_) => {
-                        return Err(index_errors::unique_index_trait_set_key_occupied());
+                        Err(index_errors::unique_index_trait_set_key_occupied())
                     }
                     std::collections::btree_map::Entry::Vacant(entry) => {
                         entry.insert(value.clone());
                         let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-                        return Ok(tuple.to_bytes());
+                        Ok(tuple.to_bytes())
                     }
                 }
             }
@@ -333,10 +333,10 @@ impl IndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for HashMapIndex {
     ) -> Result<Vec<u8>, Error> {
         self.index
             .entry(key.clone())
-            .or_insert_with(|| BTreeSet::new())
+            .or_insert_with(BTreeSet::new)
             .insert(value.clone());
         let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-        return Ok(tuple.to_bytes());
+        Ok(tuple.to_bytes())
     }
     fn remove(
         &mut self,
@@ -479,18 +479,18 @@ impl UniqueIndexTrait<kv::tuple::KeyData, kv::tuple::ValueData> for UniqueHashMa
             true => {
                 self.index.insert(key.clone(), value.clone());
                 let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-                return Ok(tuple.to_bytes());
+                Ok(tuple.to_bytes())
             }
             false => {
                 let entry = self.index.entry(key.clone());
                 match entry {
                     std::collections::hash_map::Entry::Occupied(_) => {
-                        return Err(index_errors::unique_index_trait_set_key_occupied());
+                        Err(index_errors::unique_index_trait_set_key_occupied())
                     }
                     std::collections::hash_map::Entry::Vacant(entry) => {
                         entry.insert(value.clone());
                         let tuple = kv::tuple::KVTuple::new_insert(&key, &value);
-                        return Ok(tuple.to_bytes());
+                        Ok(tuple.to_bytes())
                     }
                 }
             }
