@@ -30,6 +30,7 @@ impl IndexCrud {
             _ => IndexCrud::NONE,
         }
     }
+
     fn index_crud_to_byte(&self) -> u8 {
         match self {
             IndexCrud::DELETE => 0,
@@ -123,6 +124,7 @@ impl KVTuple {
             }
         }
         let key_data = byte_array.unwrap();
+
         Ok(Some(key_data.to_vec()))
     }
 
@@ -154,6 +156,7 @@ impl KVTuple {
             }
         }
         let value_data = byte_array.unwrap();
+
         Ok(value_data.to_vec())
     }
 
@@ -208,8 +211,10 @@ impl KVTuple {
 
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
+
         // - crud byte
         bytes.extend_from_slice(&[self.index_crud.index_crud_to_byte()]);
+
         // - key
         let key = self.key();
         if key.is_some() {
@@ -219,13 +224,13 @@ impl KVTuple {
         } else {
             return bytes;
         }
+
         // - value
-        let value = self.value();
-        if value.is_some() {
-            let value = value.unwrap();
+        if let Some(value) = self.value() {
             bytes.extend_from_slice(&u32::to_le_bytes(value.len() as u32));
             bytes.extend_from_slice(&value);
         }
+
         bytes
     }
 }
