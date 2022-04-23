@@ -59,14 +59,8 @@ impl KVTuple {
     fn new(crud: IndexCrud, key: Option<&[u8]>, value: Option<&[u8]>) -> Self {
         KVTuple {
             index_crud: crud,
-            key: match key {
-                Some(k) => Some(k.to_vec()),
-                None => None,
-            },
-            value: match value {
-                Some(v) => Some(v.to_vec()),
-                None => None,
-            },
+            key: key.map(|k| k.to_vec()),
+            value: value.map(|v| v.to_vec()),
         }
     }
 
@@ -242,7 +236,7 @@ mod tests {
 
     #[test]
     fn test_kv_tuple_to_bytes() {
-        let kv_tuple = KVTuple::new_delete(&vec![0x10, 0x20, 0x30, 0x40]);
+        let kv_tuple = KVTuple::new_delete(&[0x10, 0x20, 0x30, 0x40]);
         let bytes = kv_tuple.to_bytes();
         assert_eq!(
             bytes,
@@ -254,8 +248,8 @@ mod tests {
         );
 
         let kv_tuple = KVTuple::new_insert(
-            &vec![0x10, 0x20, 0x30, 0x40],
-            &vec![0x15, 0x25, 0x35, 0x45, 0x55, 0x65],
+            &[0x10, 0x20, 0x30, 0x40],
+            &[0x15, 0x25, 0x35, 0x45, 0x55, 0x65],
         );
         let bytes = kv_tuple.to_bytes();
         assert_eq!(
@@ -270,8 +264,8 @@ mod tests {
         );
 
         let kv_tuple = KVTuple::new_remove(
-            &vec![0x10, 0x20, 0x30, 0x40],
-            &vec![0x15, 0x25, 0x35, 0x45, 0x55, 0x65],
+            &[0x10, 0x20, 0x30, 0x40],
+            &[0x15, 0x25, 0x35, 0x45, 0x55, 0x65],
         );
         let bytes = kv_tuple.to_bytes();
         assert_eq!(
@@ -371,9 +365,9 @@ mod tests {
         test_remove(&key, &value);
         let key = "some random key as string".as_bytes();
         let value = "some random value as string".as_bytes();
-        test_delete(&key);
-        test_insert(&key, &value);
-        test_remove(&key, &value);
+        test_delete(key);
+        test_insert(key, value);
+        test_remove(key, value);
         let key = u32::to_le_bytes(u32::MAX);
         let value = u32::to_le_bytes(u32::MAX);
         test_delete(&key);

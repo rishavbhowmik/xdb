@@ -247,13 +247,9 @@ impl Storage {
     /// Check if block is empty, without reading it from file (in memory)
     fn is_empty_block(&mut self, block_index: BlockIndex) -> bool {
         if self.block_exists(block_index) {
-            if self.free_blocks.contains(&block_index) {
-                return true;
-            } else {
-                return false;
-            }
+            self.free_blocks.contains(&block_index)
         } else {
-            return true;
+            true
         }
     }
 
@@ -531,7 +527,7 @@ impl Storage {
 
         // - Write Block Data
         // -- write block data to file
-        let write_result = self.file_writer.write(&data[..]);
+        let write_result = self.file_writer.write(data);
         if write_result.is_err() {
             return Err(storage_errors::write_block_write_block_data(
                 write_result.unwrap_err(),
@@ -566,7 +562,7 @@ impl Storage {
         hard_delete: bool,
     ) -> Result<usize, Error> {
         if !self.block_exists(block_index)
-            || (hard_delete == false && self.free_blocks.contains(&block_index))
+            || (!hard_delete && self.free_blocks.contains(&block_index))
         {
             return Ok(self.write_pointer);
         }
@@ -610,7 +606,7 @@ impl Storage {
         }
 
         // - hard delete block
-        if hard_delete == true {
+        if hard_delete {
             // post successful block header write, writer pointer must be at data offset
             // - overwrite full block with zeros
             let block_data_of_zeros = vec![0u8; block_length as usize];
@@ -650,7 +646,7 @@ impl Storage {
             .cloned()
             .collect::<Vec<BlockIndex>>();
         available_free_blocks.truncate(count as usize);
-        available_free_blocks.sort();
+        available_free_blocks.sort_unstable();
         // push indexes beyond end_block_count if required
         for i in (self.end_block_count as usize)
             ..(self.end_block_count as usize + count as usize - available_free_blocks.len())

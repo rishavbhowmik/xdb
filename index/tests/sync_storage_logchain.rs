@@ -26,8 +26,7 @@ fn remove_dir_contents(path: std::path::PathBuf) {
             remove_file(path).unwrap();
         }
     }
-    let path_copy = path.clone();
-    remove_dir(path_copy).unwrap();
+    remove_dir(path).unwrap();
 }
 
 // ... ... ... ... ... ... BTreeIndex ... ... ... ... ... ... ...
