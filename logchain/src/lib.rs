@@ -9,11 +9,10 @@ use segment_block_index::{
     block_index_from_buffer, block_index_to_buffer, BLOCK_INDEX_SIZE, LAST_NEXT_BLOCK_INDEX,
 };
 
+type MakeSegmentPayloadListResult =
+    Result<(Vec<(BlockIndex, Vec<u8>)>, BlockIndex, BlockIndex), Error>;
 /// Returns (Vector<(next_block_index, data_chunk)>, first_block_index, last_block_index)
-pub fn make_segment_payload_list(
-    storage: &Storage,
-    data: &[u8],
-) -> Result<(Vec<(BlockIndex, Vec<u8>)>, BlockIndex, BlockIndex), Error> {
+pub fn make_segment_payload_list(storage: &Storage, data: &[u8]) -> MakeSegmentPayloadListResult {
     let block_len = storage.block_len() as usize;
     let chunk_len = block_len - BLOCK_INDEX_SIZE;
     let (blocks_required, chunks) = make_chunks(data, chunk_len);
