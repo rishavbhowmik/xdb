@@ -85,7 +85,7 @@ impl KVTuple {
         let byte_array = cursor.consume(1);
         if byte_array.is_err() {
             if byte_array.err().unwrap().kind() == std::io::ErrorKind::UnexpectedEof {
-                return Err(tuple_errors::index_crud_from_cursor_invalid_bytes());
+                return Err(tuple_errors::index_crud_from_cursor_invalid_eof_at_crud());
             } else {
                 return Err(tuple_errors::index_crud_from_cursor_invalid_bytes());
             }

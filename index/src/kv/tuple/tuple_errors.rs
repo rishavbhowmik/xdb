@@ -4,6 +4,14 @@ pub fn from_byte_cursor_invalid_crud() -> Error {
     Error::new(ErrorType::Unexpected, "invalid crud", None)
 }
 
+pub fn index_crud_from_cursor_invalid_eof_at_crud() -> Error {
+    Error::new(
+        ErrorType::Unexpected,
+        "index_crud_from_cursor_invalid_eof_at_crud",
+        Some(format!("Missing enough bytes to read crud")),
+    )
+}
+
 pub fn index_crud_from_cursor_invalid_bytes() -> Error {
     Error::new(
         ErrorType::Critical,
