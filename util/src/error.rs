@@ -18,7 +18,7 @@ impl Error {
         Error {
             error_type,
             code: code.to_string(),
-            description: description.unwrap_or_else(||"".to_string()),
+            description: description.unwrap_or_else(|| "".to_string()),
         }
     }
     pub fn code(&self) -> &str {
