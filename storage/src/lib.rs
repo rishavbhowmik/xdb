@@ -152,12 +152,11 @@ impl Storage {
     /// - truncate: if false, no modification to the file
     /// - returns: (file_object_for_writing, write_pointer) - write_pointer is always 0
     fn open_file_writer(file_path: &str, truncate: bool) -> Result<(File, usize), Error> {
-        let file_path_clone = file_path.clone();
         let file_writer_result = OpenOptions::new()
             .write(true)
             .truncate(truncate)
             .create(true)
-            .open(file_path_clone);
+            .open(file_path);
         if let Err(result_error) = file_writer_result {
             return Err(storage_errors::open_file_writer_open_file(result_error));
         }
@@ -169,8 +168,7 @@ impl Storage {
     /// Open storage file for reading
     /// - returns: (file_object_for_reading, read_pointer) - read_pointer is always 0
     fn open_file_reader(file_path: &str) -> Result<(File, usize), Error> {
-        let file_path_clone = file_path.clone();
-        let file_reader_result = OpenOptions::new().read(true).open(file_path_clone);
+        let file_reader_result = OpenOptions::new().read(true).open(file_path);
         if let Err(result_error) = file_reader_result {
             return Err(storage_errors::open_file_reader_open_file(result_error));
         }
@@ -245,7 +243,7 @@ impl Storage {
     }
 
     /// Check if block is empty, without reading it from file (in memory)
-    fn is_empty_block(&mut self, block_index: BlockIndex) -> bool {
+    fn block_empty(&mut self, block_index: BlockIndex) -> bool {
         if self.block_exists(block_index) {
             self.free_blocks.contains(&block_index)
         } else {
@@ -418,7 +416,7 @@ impl Storage {
     /// Read block data from storage file
     /// - return (read_pointer, block_data)
     pub fn read_block(&mut self, block_index: BlockIndex) -> Result<(usize, Vec<u8>), Error> {
-        if self.is_empty_block(block_index) {
+        if self.block_empty(block_index) {
             // return current read_pointer and empty vector
             return Ok((self.read_pointer as usize, Vec::new()));
         }
