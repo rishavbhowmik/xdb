@@ -85,6 +85,73 @@ But we need a more reliable flow in a multi-threaded environment.
 
 ### Flow of operations
 
+#### Create an index with Arc lock
+
+```rs
+use std::sync::{Arc, Mutex};
+
+let mut btree_index_lock = Arc::new(
+    Mutex::new(
+        index::UniqueBTreeIndex::from_bytes(&[]).unwrap()
+    )
+);
+```
+
+#### Thread for write operations
+
+```rs
+enum WRITE_ENUM {
+    INSERT,
+    REMOVE,
+    DELETE,
+}
+
+type UUID = u64;
+
+/// channel for sending wite operation to the write thread
+type IndexWriteChanPayload = (UUID, WRITE_ENUM, Vec<u8>, Vec<u8>)
+let (index_write_tx, index_write_rx): (Sender<IndexWriteChanPayload>, Receiver<IndexWriteChanPayload>) = channel();
+
+/// Channel for receiving results from the write thread
+type IndexWriteResChanPayload = (UUID, Vec<u8>);
+let (index_write_res_tx, index_write_res_rx): (Sender<IndexWriteResChanPayload>, Receiver<IndexWriteResChanPayload>) = channel();
+
+/// btree_index_lock clone for write thread
+let btree_index_lock_clone = btree_index_lock.clone();
+
+let write_thread = thread::spawn(move || {
+    // listen to index_write channel
+    loop {
+        if let Ok(write_tuple) = index_write_rx.recv() {
+            let mut btree_index_lock = btree_index_lock.lock().unwrap();
+
+            let uuid = write_tuple.0;
+
+            let result = match write_tuple.1 {
+                WRITE_ENUM::INSERT => btree_index_lock.insert(write_tuple.2, write_tuple.3),
+                WRITE_ENUM::REMOVE => btree_index_lock.remove(write_tuple.2, write_tuple.3),
+                WRITE_ENUM::DELETE => btree_index_lock.delete(write_tuple.2),
+            };
+
+            // send result to the main thread
+            if result.is_ok() {
+                index_write_res_tx.send((uuid, result.unwrap())).unwrap();
+            } else {
+                index_write_res_tx.send((uuid, vec![])).unwrap();
+            }
+        }
+    }
+});
+
+// insert a key and value pair
+let common_uuid = 11 as UUID;
+index_write_tx.send((common_uuid, WRITE_ENUM::INSERT, "One Plus One".as_bytes().to_vec(), "Two".as_bytes().to_vec())).unwrap();
+if let Ok(write_res) = index_write_res_rx.recv() {
+    assert_eq!(write_res.0, common_uuid);
+    assert!(write_res.1.len());
+}
+```
+
 #### INSERT
 
 1. Lock all read and write operations.
@@ -96,7 +163,7 @@ But we need a more reliable flow in a multi-threaded environment.
 
 1. Lock all read and write operations.
 2. Remove the key-value pair in the index.
-3. Append index log with `INSERT_LOG` tuple.
+3. Append index log with `REMOVE_LOG` tuple.
 4. Unlock all read and write operations.
 
 #### DELETE
