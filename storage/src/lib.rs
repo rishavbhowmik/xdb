@@ -559,9 +559,9 @@ impl Storage {
         block_index: BlockIndex,
         hard_delete: bool,
     ) -> Result<usize, Error> {
-        if !self.block_exists(block_index) {
-            return Ok(self.write_pointer);
-        } else if hard_delete == false && self.free_blocks.contains(&block_index) {
+        if !self.block_exists(block_index)
+            || (hard_delete == false && self.free_blocks.contains(&block_index))
+        {
             return Ok(self.write_pointer);
         }
         use std::io::prelude::*;
