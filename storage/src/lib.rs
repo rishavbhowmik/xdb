@@ -71,13 +71,13 @@ pub const BLOCK_HEADER_SIZE: usize = std::mem::size_of::<BlockHeader>();
 impl BlockHeader {
     fn new(block_data_size: u32) -> BlockHeader {
         BlockHeader {
-            block_data_size: block_data_size,
+            block_data_size,
         }
     }
     fn from_bytes(bytes: [u8; BLOCK_HEADER_SIZE]) -> BlockHeader {
         let block_data_size = BlockLength::from_le_bytes(bytes);
         BlockHeader {
-            block_data_size: block_data_size,
+            block_data_size,
         }
     }
     fn to_bytes(&self) -> [u8; BLOCK_HEADER_SIZE] {
