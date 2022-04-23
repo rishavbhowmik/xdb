@@ -54,9 +54,7 @@ fn storage_open_new_file() {
     let actual = read_full_file(tmp_file_path);
     assert_eq!(expected, actual);
     // write to block 0
-    let block_0_data = vec![
-        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8,
-    ];
+    let block_0_data = vec![1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8];
     let result = storage.write_block(0, &block_0_data);
     assert_eq!(result.is_ok(), true);
     let write_ptr = result.unwrap();
@@ -65,9 +63,7 @@ fn storage_open_new_file() {
     let actual = read_full_file(tmp_file_path);
     assert_eq!(expected, actual);
     // write to block 1
-    let block_1_data = vec![
-        9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8,
-    ];
+    let block_1_data = vec![9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8];
     let result = storage.write_block(1, &block_1_data);
     assert_eq!(result.is_ok(), true);
     let write_ptr = result.unwrap();

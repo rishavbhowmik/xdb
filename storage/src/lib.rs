@@ -266,17 +266,20 @@ impl Storage {
         let header_bytes = self.header.to_bytes();
         // -- seek writer pointer to beginning of file
         let ptr_seek_result = file.seek(std::io::SeekFrom::Start(0));
-        if ptr_seek_result.is_err() {
-            return Err(storage_errors::set_storage_header_seek_start(
-                ptr_seek_result.unwrap_err(),
-            ));
+        if let Err(result_error) = ptr_seek_result {
+            return Err(storage_errors::set_storage_header_seek_start(result_error));
         }
         // -- write storage header
         self.write_pointer = ptr_seek_result.unwrap() as usize;
         let write_result = file.write(&header_bytes);
-        if write_result.is_err() {
+        // if write_result.is_err() {
+        //     return Err(storage_errors::set_storage_header_write_header(
+        //         write_result.unwrap_err(),
+        //     ));
+        // }
+        if let Err(result_error) = write_result {
             return Err(storage_errors::set_storage_header_write_header(
-                write_result.unwrap_err(),
+                result_error,
             ));
         }
         // -- verify write operation was successful
@@ -389,9 +392,9 @@ impl Storage {
             // - seek reader pointer to end of block
             let ptr_seek_result =
                 file.seek(std::io::SeekFrom::Current(self.header.block_len as i64));
-            if ptr_seek_result.is_err() {
+            if let Err(result_error) = ptr_seek_result {
                 return Err(storage_errors::read_storage_block_headers_seek_next_block(
-                    ptr_seek_result.unwrap_err(),
+                    result_error,
                 ));
             }
             let ptr_seek_result = ptr_seek_result.unwrap() as usize;
@@ -460,10 +463,8 @@ impl Storage {
         // - read block data to vec
         let mut block_data = vec![0u8; block_header.block_data_size as usize];
         let read_result = self.file_reader.read(&mut block_data[..]);
-        if read_result.is_err() {
-            return Err(storage_errors::read_block_read_block_data(
-                read_result.unwrap_err(),
-            ));
+        if let Err(result_error) = read_result {
+            return Err(storage_errors::read_block_read_block_data(result_error));
         }
         let read_size = read_result.unwrap();
         self.read_pointer += read_size;
@@ -491,10 +492,8 @@ impl Storage {
         let seek_result = self
             .file_writer
             .seek(std::io::SeekFrom::Start(block_offset as u64));
-        if seek_result.is_err() {
-            return Err(storage_errors::write_block_seek_block_offset(
-                seek_result.unwrap_err(),
-            ));
+        if let Err(result_error) = seek_result {
+            return Err(storage_errors::write_block_seek_block_offset(result_error));
         }
         // -- verify seek operation was successful
         let seek_position = seek_result.unwrap() as usize;
@@ -509,10 +508,8 @@ impl Storage {
         // -- write block header to inital BLOCK_HEADER_SIZE bytes
         let block_header = BlockHeader::new(data.len() as BlockLength);
         let write_result = self.file_writer.write(&block_header.to_bytes());
-        if write_result.is_err() {
-            return Err(storage_errors::write_block_write_block_header(
-                write_result.unwrap_err(),
-            ));
+        if let Err(result_error) = write_result {
+            return Err(storage_errors::write_block_write_block_header(result_error));
         }
         let write_size = write_result.unwrap();
         self.write_pointer += write_size;
@@ -526,10 +523,8 @@ impl Storage {
         // - Write Block Data
         // -- write block data to file
         let write_result = self.file_writer.write(data);
-        if write_result.is_err() {
-            return Err(storage_errors::write_block_write_block_data(
-                write_result.unwrap_err(),
-            ));
+        if let Err(result_error) = write_result {
+            return Err(storage_errors::write_block_write_block_data(result_error));
         }
         let write_size = write_result.unwrap();
         self.write_pointer += write_size;

@@ -64,8 +64,8 @@ fn make_segment_payload_list_new_storage() {
 
     // check log 0
     let log_0_data = vec![
-        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8,
-        11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8,
+        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8,
+        15_u8, 16_u8,
     ];
     let result = make_segment_payload_list(&mut storage, &log_0_data);
     assert_eq!(result.is_ok(), true);
@@ -81,10 +81,9 @@ fn make_segment_payload_list_new_storage() {
 
     // check log 1
     let log_1_data = vec![
-        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8,
-        26_u8, 27_u8, 28_u8, 29_u8, 30_u8, 31_u8, 32_u8, 33_u8, 34_u8,
-        35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8, 43_u8,
-        44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
+        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8, 26_u8, 27_u8, 28_u8, 29_u8,
+        30_u8, 31_u8, 32_u8, 33_u8, 34_u8, 35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8,
+        43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = make_segment_payload_list(&mut storage, &log_1_data);
     assert_eq!(result.is_ok(), true);
@@ -146,8 +145,8 @@ fn make_segment_payload_list_existing_storage() {
 
     // check log 0
     let log_0_data = vec![
-        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8,
-        11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8,
+        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8,
+        15_u8, 16_u8,
     ];
     let result = make_segment_payload_list(&mut storage, &log_0_data);
     assert_eq!(result.is_ok(), true);
@@ -167,10 +166,9 @@ fn make_segment_payload_list_existing_storage() {
 
     // check log 1
     let log_1_data = vec![
-        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8,
-        26_u8, 27_u8, 28_u8, 29_u8, 30_u8, 31_u8, 32_u8, 33_u8, 34_u8,
-        35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8, 43_u8,
-        44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
+        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8, 26_u8, 27_u8, 28_u8, 29_u8,
+        30_u8, 31_u8, 32_u8, 33_u8, 34_u8, 35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8,
+        43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = make_segment_payload_list(&mut storage, &log_1_data);
     assert_eq!(result.is_ok(), true);
@@ -244,8 +242,8 @@ fn create_log_new_storage() {
 
     // write log 0
     let log_0_data = vec![
-        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8,
-        11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8,
+        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8,
+        15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
     assert_eq!(result.is_ok(), true);
@@ -259,10 +257,9 @@ fn create_log_new_storage() {
 
     // write log 1
     let log_1_data = vec![
-        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8,
-        26_u8, 27_u8, 28_u8, 29_u8, 30_u8, 31_u8, 32_u8, 33_u8, 34_u8,
-        35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8, 43_u8,
-        44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
+        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8, 26_u8, 27_u8, 28_u8, 29_u8,
+        30_u8, 31_u8, 32_u8, 33_u8, 34_u8, 35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8,
+        43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = create_log(&mut storage, &log_1_data);
     assert_eq!(result.is_ok(), true);
@@ -316,8 +313,8 @@ fn create_log_existing_storage() {
 
     // write log 0
     let log_0_data = vec![
-        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8,
-        11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8,
+        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8,
+        15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
     assert_eq!(result.is_ok(), true);
@@ -331,10 +328,9 @@ fn create_log_existing_storage() {
 
     // write log 1
     let log_1_data = vec![
-        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8,
-        26_u8, 27_u8, 28_u8, 29_u8, 30_u8, 31_u8, 32_u8, 33_u8, 34_u8,
-        35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8, 43_u8,
-        44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
+        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8, 26_u8, 27_u8, 28_u8, 29_u8,
+        30_u8, 31_u8, 32_u8, 33_u8, 34_u8, 35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8,
+        43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = create_log(&mut storage, &log_1_data);
     assert_eq!(result.is_ok(), true);
@@ -389,8 +385,8 @@ fn append_log_new_storage() {
 
     // create log 0 (starts at block 0)
     let log_0_data = vec![
-        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8,
-        11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8,
+        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8,
+        15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
     assert_eq!(result.is_ok(), true);
@@ -405,9 +401,7 @@ fn append_log_new_storage() {
     let log_0_first_block_index = first_block_index;
 
     // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with single traversal
-    let log_0_data = vec![
-        8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
-    ];
+    let log_0_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, last_block_index, &log_0_data);
     assert_eq!(result.is_ok(), true);
     let last_block_index = result.unwrap();
@@ -417,9 +411,7 @@ fn append_log_new_storage() {
     assert_eq!(actual, expected); // ??
 
     // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with traversal from start of log
-    let log_0_data = vec![
-        8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
-    ];
+    let log_0_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, 0, &log_0_data);
     assert_eq!(result.is_ok(), true);
     let last_block_index = result.unwrap();
@@ -474,9 +466,7 @@ fn append_log_new_storage() {
     assert_eq!(actual, expected);
 
     // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with no traverse and end at new block
-    let log_0_data = vec![
-        8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
-    ];
+    let log_0_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, last_block_index, &log_0_data);
     assert_eq!(result.is_ok(), true);
     let last_block_index = result.unwrap();
@@ -507,10 +497,9 @@ fn append_log_new_storage() {
 
     // append log 1 - [32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2]
     let log_1_data = vec![
-        32_u8, 31_u8, 30_u8, 29_u8, 28_u8, 27_u8, 26_u8, 25_u8, 24_u8,
-        23_u8, 22_u8, 21_u8, 20_u8, 19_u8, 18_u8, 17_u8, 16_u8, 15_u8,
-        14_u8, 13_u8, 12_u8, 11_u8, 10_u8, 9_u8, 8_u8, 7_u8, 6_u8,
-        5_u8, 4_u8, 3_u8, 2_u8,
+        32_u8, 31_u8, 30_u8, 29_u8, 28_u8, 27_u8, 26_u8, 25_u8, 24_u8, 23_u8, 22_u8, 21_u8, 20_u8,
+        19_u8, 18_u8, 17_u8, 16_u8, 15_u8, 14_u8, 13_u8, 12_u8, 11_u8, 10_u8, 9_u8, 8_u8, 7_u8,
+        6_u8, 5_u8, 4_u8, 3_u8, 2_u8,
     ];
     let result = append_log(&mut storage, last_block_index, &log_1_data);
     assert_eq!(result.is_ok(), true);
@@ -544,9 +533,7 @@ fn append_log_new_storage() {
     assert_eq!(actual, expected);
 
     // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - traverse from start
-    let log_0_data = vec![
-        8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
-    ];
+    let log_0_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, log_0_first_block_index, &log_0_data);
     assert_eq!(result.is_ok(), true);
     let last_block_index = result.unwrap();
@@ -571,10 +558,9 @@ fn append_log_new_storage() {
 
     // append log 1 - [32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2] - traverse from start
     let log_1_data = vec![
-        32_u8, 31_u8, 30_u8, 29_u8, 28_u8, 27_u8, 26_u8, 25_u8, 24_u8,
-        23_u8, 22_u8, 21_u8, 20_u8, 19_u8, 18_u8, 17_u8, 16_u8, 15_u8,
-        14_u8, 13_u8, 12_u8, 11_u8, 10_u8, 9_u8, 8_u8, 7_u8, 6_u8,
-        5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
+        32_u8, 31_u8, 30_u8, 29_u8, 28_u8, 27_u8, 26_u8, 25_u8, 24_u8, 23_u8, 22_u8, 21_u8, 20_u8,
+        19_u8, 18_u8, 17_u8, 16_u8, 15_u8, 14_u8, 13_u8, 12_u8, 11_u8, 10_u8, 9_u8, 8_u8, 7_u8,
+        6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
     ];
     let result = append_log(&mut storage, log_1_last_block_lock, &log_1_data);
     assert_eq!(result.is_ok(), true);
@@ -629,18 +615,17 @@ fn delete_log_new_storage() {
 
     // write log 0
     let log_0_data = vec![
-        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8,
-        11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8,
+        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8,
+        15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
     assert_eq!(result.is_ok(), true);
 
     // write log 1
     let log_1_data = vec![
-        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8,
-        26_u8, 27_u8, 28_u8, 29_u8, 30_u8, 31_u8, 32_u8, 33_u8, 34_u8,
-        35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8, 43_u8,
-        44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
+        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8, 26_u8, 27_u8, 28_u8, 29_u8,
+        30_u8, 31_u8, 32_u8, 33_u8, 34_u8, 35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8,
+        43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = create_log(&mut storage, &log_1_data);
     assert_eq!(result.is_ok(), true);
@@ -653,10 +638,9 @@ fn delete_log_new_storage() {
 
     // write log 2
     let log_2_data = vec![
-        53_u8, 54_u8, 55_u8, 56_u8, 57_u8, 58_u8, 59_u8, 60_u8, 61_u8,
-        62_u8, 63_u8, 64_u8, 65_u8, 66_u8, 67_u8, 68_u8, 69_u8, 70_u8,
-        71_u8, 72_u8, 73_u8, 74_u8, 75_u8, 76_u8, 77_u8, 78_u8, 79_u8,
-        80_u8, 81_u8, 82_u8, 83_u8, 84_u8, 85_u8, 86_u8, 87_u8, 88_u8,
+        53_u8, 54_u8, 55_u8, 56_u8, 57_u8, 58_u8, 59_u8, 60_u8, 61_u8, 62_u8, 63_u8, 64_u8, 65_u8,
+        66_u8, 67_u8, 68_u8, 69_u8, 70_u8, 71_u8, 72_u8, 73_u8, 74_u8, 75_u8, 76_u8, 77_u8, 78_u8,
+        79_u8, 80_u8, 81_u8, 82_u8, 83_u8, 84_u8, 85_u8, 86_u8, 87_u8, 88_u8,
     ];
     let result = create_log(&mut storage, &log_2_data);
     assert_eq!(result.is_ok(), true);
@@ -670,12 +654,11 @@ fn delete_log_new_storage() {
 
     // write log 3
     let log_3_data = vec![
-        89_u8, 90_u8, 91_u8, 92_u8, 93_u8, 94_u8, 95_u8, 96_u8, 97_u8,
-        98_u8, 99_u8, 100_u8, 101_u8, 102_u8, 103_u8, 104_u8, 105_u8,
-        106_u8, 107_u8, 108_u8, 109_u8, 110_u8, 111_u8, 112_u8, 113_u8,
-        114_u8, 115_u8, 116_u8, 117_u8, 118_u8, 119_u8, 120_u8, 121_u8,
-        122_u8, 123_u8, 124_u8, 125_u8, 126_u8, 127_u8, 128_u8, 129_u8,
-        130_u8, 131_u8, 132_u8, 133_u8, 134_u8, 135_u8, 136_u8, 137_u8,
+        89_u8, 90_u8, 91_u8, 92_u8, 93_u8, 94_u8, 95_u8, 96_u8, 97_u8, 98_u8, 99_u8, 100_u8,
+        101_u8, 102_u8, 103_u8, 104_u8, 105_u8, 106_u8, 107_u8, 108_u8, 109_u8, 110_u8, 111_u8,
+        112_u8, 113_u8, 114_u8, 115_u8, 116_u8, 117_u8, 118_u8, 119_u8, 120_u8, 121_u8, 122_u8,
+        123_u8, 124_u8, 125_u8, 126_u8, 127_u8, 128_u8, 129_u8, 130_u8, 131_u8, 132_u8, 133_u8,
+        134_u8, 135_u8, 136_u8, 137_u8,
     ];
     let result = create_log(&mut storage, &log_3_data);
     assert_eq!(result.is_ok(), true);
@@ -728,8 +711,8 @@ fn read_log_new_storage() {
     // add logs to storage
     // - log 0
     let log_0_data = vec![
-        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8,
-        11_u8, 12_u8, 13_u8, 14_u8, 15_u8, 16_u8,
+        1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8, 9_u8, 10_u8, 11_u8, 12_u8, 13_u8, 14_u8,
+        15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
     assert_eq!(result.is_ok(), true);
@@ -747,10 +730,9 @@ fn read_log_new_storage() {
     }
     // - log 1
     let log_1_data = vec![
-        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8,
-        26_u8, 27_u8, 28_u8, 29_u8, 30_u8, 31_u8, 32_u8, 33_u8, 34_u8,
-        35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8, 43_u8,
-        44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
+        17_u8, 18_u8, 19_u8, 20_u8, 21_u8, 22_u8, 23_u8, 24_u8, 25_u8, 26_u8, 27_u8, 28_u8, 29_u8,
+        30_u8, 31_u8, 32_u8, 33_u8, 34_u8, 35_u8, 36_u8, 37_u8, 38_u8, 39_u8, 40_u8, 41_u8, 42_u8,
+        43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = create_log(&mut storage, &log_1_data);
     assert_eq!(result.is_ok(), true);
@@ -768,12 +750,10 @@ fn read_log_new_storage() {
     }
     // - log 2
     let log_2_data = vec![
-        53_u8, 54_u8, 55_u8, 56_u8, 57_u8, 58_u8, 59_u8, 60_u8, 61_u8,
-        62_u8, 63_u8, 64_u8, 65_u8, 66_u8, 67_u8, 68_u8, 69_u8, 70_u8,
-        71_u8, 72_u8, 73_u8, 74_u8, 75_u8, 76_u8, 77_u8, 78_u8, 79_u8,
-        80_u8, 81_u8, 82_u8, 83_u8, 84_u8, 85_u8, 86_u8, 87_u8, 88_u8,
-        89_u8, 90_u8, 91_u8, 92_u8, 93_u8, 94_u8, 95_u8, 96_u8, 97_u8,
-        98_u8, 99_u8, 100_u8,
+        53_u8, 54_u8, 55_u8, 56_u8, 57_u8, 58_u8, 59_u8, 60_u8, 61_u8, 62_u8, 63_u8, 64_u8, 65_u8,
+        66_u8, 67_u8, 68_u8, 69_u8, 70_u8, 71_u8, 72_u8, 73_u8, 74_u8, 75_u8, 76_u8, 77_u8, 78_u8,
+        79_u8, 80_u8, 81_u8, 82_u8, 83_u8, 84_u8, 85_u8, 86_u8, 87_u8, 88_u8, 89_u8, 90_u8, 91_u8,
+        92_u8, 93_u8, 94_u8, 95_u8, 96_u8, 97_u8, 98_u8, 99_u8, 100_u8,
     ];
     let result = create_log(&mut storage, &log_2_data);
     assert_eq!(result.is_ok(), true);
@@ -809,9 +789,7 @@ fn read_log_new_storage() {
     }
     // append logs in storage
     // - log 0
-    let log_0_append_data = vec![
-        8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
-    ];
+    let log_0_append_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, log_0_first_block_index, &log_0_append_data);
     assert_eq!(result.is_ok(), true);
     let log_0_last_block_index = result.unwrap();
@@ -828,8 +806,8 @@ fn read_log_new_storage() {
     }
     // - log 1
     let log_1_append_data = vec![
-        16_u8, 15_u8, 14_u8, 13_u8, 12_u8, 11_u8, 10_u8, 9_u8, 8_u8,
-        7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
+        16_u8, 15_u8, 14_u8, 13_u8, 12_u8, 11_u8, 10_u8, 9_u8, 8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8,
+        2_u8, 1_u8,
     ];
     let result = append_log(&mut storage, log_1_first_block_index, &log_1_append_data);
     assert_eq!(result.is_ok(), true);
@@ -847,10 +825,9 @@ fn read_log_new_storage() {
     }
     // - log 2
     let log_2_append_data = vec![
-        35_u8, 34_u8, 33_u8, 32_u8, 31_u8, 30_u8, 29_u8, 28_u8, 27_u8,
-        26_u8, 25_u8, 24_u8, 23_u8, 22_u8, 21_u8, 20_u8, 19_u8, 18_u8,
-        17_u8, 16_u8, 15_u8, 14_u8, 13_u8, 12_u8, 11_u8, 10_u8, 9_u8,
-        8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
+        35_u8, 34_u8, 33_u8, 32_u8, 31_u8, 30_u8, 29_u8, 28_u8, 27_u8, 26_u8, 25_u8, 24_u8, 23_u8,
+        22_u8, 21_u8, 20_u8, 19_u8, 18_u8, 17_u8, 16_u8, 15_u8, 14_u8, 13_u8, 12_u8, 11_u8, 10_u8,
+        9_u8, 8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
     ];
     let result = append_log(&mut storage, log_2_first_block_index, &log_2_append_data);
     assert_eq!(result.is_ok(), true);

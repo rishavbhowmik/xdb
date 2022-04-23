@@ -211,8 +211,7 @@ impl KVTuple {
 
         // - key
         let key = self.key();
-        if key.is_some() {
-            let key = key.unwrap();
+        if let Some(key) = key {
             bytes.extend_from_slice(&u32::to_le_bytes(key.len() as u32));
             bytes.extend_from_slice(&key);
         } else {
