@@ -16,7 +16,7 @@ pub struct Error {
 impl Error {
     pub fn new(error_type: ErrorType, code: &str, description: Option<String>) -> Self {
         Error {
-            error_type: error_type,
+            error_type,
             code: code.to_string(),
             description: description.unwrap_or("".to_string()),
         }
