@@ -2,10 +2,19 @@
 
 An index is keys and values mapped in B-Tree or Hash-Map.
 
-## Types of Indexes
+## Data Structures for Indexes
 
-1. B-Tree Index: A B-Tree is a self-balancing binary search tree, which also supports range searches.
-2. Hash-Map Index: A Hash-Map is a data structure that maps keys to values.
+1. B-Tree: A B-Tree is a self-balancing binary search tree, which also supports range searches.
+2. Hash-Map: A Hash-Map is a data structure that maps keys to values.
+
+Using B-Tree and Hash-Map, we implement 4 types of indexes:
+
+1. BTreeIndex
+2. UniqueBTreeIndex
+3. HashMapIndex
+4. UniqueHashMapIndex
+
+_Their names speak for themselves_
 
 ## Persisting of Indexes in storage
 
@@ -69,13 +78,13 @@ The Index log file serially records all write operations on the index.
 ```rs
 let mut btree_index = index::BTreeIndex::from_bytes(&[]).unwrap();
 
-// insert a key and value pair
+// Insert a key and value pair
 let insert_result = btree_index.insert(
     "One Plus One".as_bytes().to_vec(),
     "Two".as_bytes().to_vec()
 );
 
-// tuple for inserting the key and value pair
+// Tuple for inserting the key and value pair
 let insert_tuple_bytes = insert_result.unwrap();
 
 // Now, append `insert_tuple_bytes` into index log
@@ -108,7 +117,7 @@ enum WRITE_ENUM {
 
 type UUID = u64;
 
-/// channel for sending wite operation to the write thread
+/// Channel for sending wite operation to the write thread
 type IndexWriteChanPayload = (UUID, WRITE_ENUM, Vec<u8>, Vec<u8>)
 let (index_write_tx, index_write_rx): (Sender<IndexWriteChanPayload>, Receiver<IndexWriteChanPayload>) = channel();
 
@@ -120,7 +129,7 @@ let (index_write_res_tx, index_write_res_rx): (Sender<IndexWriteResChanPayload>,
 let btree_index_lock_clone = btree_index_lock.clone();
 
 let write_thread = thread::spawn(move || {
-    // listen to index_write channel
+    // Listen to index_write channel
     loop {
         if let Ok(write_tuple) = index_write_rx.recv() {
             let mut btree_index_lock = btree_index_lock.lock().unwrap();
@@ -133,7 +142,7 @@ let write_thread = thread::spawn(move || {
                 WRITE_ENUM::DELETE => btree_index_lock.delete(write_tuple.2),
             };
 
-            // send result to the main thread
+            // Send result to the main thread
             if result.is_ok() {
                 index_write_res_tx.send((uuid, result.unwrap())).unwrap();
             } else {
@@ -143,14 +152,14 @@ let write_thread = thread::spawn(move || {
     }
 });
 
-// insert a key-value pair
+// Insert a key-value pair
 let common_uuid = 11 as UUID;
 index_write_tx.send((common_uuid, WRITE_ENUM::INSERT, "One Plus One".as_bytes().to_vec(), "Two".as_bytes().to_vec())).unwrap();
 if let Ok(write_res) = index_write_res_rx.recv() {
     let (uuid, index_log_tuple) = write_res;
     assert_eq!(uuid, common_uuid);
     assert!(index_log_tuple.len() > 0);
-    // append index_log_tuple to index log
+    // Append index_log_tuple to index log
 }
 ```
 
@@ -184,7 +193,7 @@ Just read it!
 ```rs
 let index_sync_bytes: Vec<u8> = vec![];
 
-/// create new index
+/// Create new index
 let mut new_index = index::BTreeIndex::from_bytes(&index_sync_bytes).unwrap();
 
 /// Insert some key value pairs
