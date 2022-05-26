@@ -41,11 +41,11 @@ If all blocks in storage are not free, the storage file is extended with new blo
 
 Blocks with data_length 0, which can be reused to store new data.
 
-#### Free blocks array in memory
+#### Free blocks record in in memory
 
 - Initialize free blocks with all blocks in the file with data_length 0.
-- When a block is deleted, add it to free blocks.
-- When a block is written, remove it from free blocks.
+- When a block gets deleted, add its index to the free blocks record.
+- When a block gets written, remove its index from the free blocks record.
 
 > The purpose is to reuse the blocks in which data is previously deleted.
 
@@ -88,23 +88,23 @@ Writing blocks in a uniform direction of sorted block indexes, can significantly
 /// Local file path for storage file.
 let file_path = "test.dat";
 
-// create new storage
+// Create new storage
 let block_len = 8;
 let mut storage = Storage::new(String::from(tmp_file_path), block_len).unwrap();
 
-// write 8 bytes to block 0
+// Write 8 bytes to block 0
 let data = [1, 2, 3, 4, 5, 6, 7, 8];
 let block_indexes = storage.write(0 as BlockIndex, &data).unwrap();
 
-// read 8 bytes from block 0
+// Read 8 bytes from block 0
 let mut read_data = [0; 8];
 let block_indexes = storage.read(0 as BlockIndex, &mut data).unwrap();
 assert_eq!(read_data, data);
 
-// delete block 0
+// Delete block 0
 storage.delete(0 as BlockIndex).unwrap();
 
-// search for free blocks and then write data in blocks
+// Search for free blocks, then write the data in the blocks
 let data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 let data_chunks = data.chunks(block_len); // [ [1,2,3,4,5,6,7,8], [9,10,11,12,13,14,15,16] ]
 let blocks_required = data_chunks.clone().count(); // 2
@@ -114,7 +114,7 @@ allocated_blocks.iter().for_each(|block_index| {
     storage.write(*block_index, &data_chunk).unwrap();
 });
 
-// read from allocated_blocks
+// Read from allocated_blocks
 let mut read_data: Vec<u8> = Vec::new();
 allocated_blocks.iter().for_each(|block_index| {
     let mut data_chunk = [0; 8];
