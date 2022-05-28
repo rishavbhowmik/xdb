@@ -26,6 +26,6 @@ To be fair, I am still learning Rust and Computer Science in general. I am no pr
 
 So If you are a pro and see something good can come out of this project or wish to drive it to something better, please feel free to contribute.
 
-And if you are a beginner or some who just wants to learn Rust or how Databases work, I am sure you can learn and experience a lot from this project. This project requires everything, right from using FileSystem, Data Structures, understanding of core concepts of Rust, Multithreading, Concurrency, Channeling, Mutexes, Networking, Auth, etc.
+And if you are a beginner or some who just wants to learn Rust or how Databases work, I am sure you can learn and experience a lot from this project. This project requires everything, right from using FileSystem, Data Structures, understanding of core concepts of Rust, Multithreading, Concurrency, Channeling, Mutexes, Networking, Auth and making tests for all of them, etc.
 
 **Let's have some fun!**
