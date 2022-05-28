@@ -2,31 +2,30 @@
 
 # What is XDB?
 
-Hopefully a graph based Database with a very fast storage engine without wearing out the disk.
+A project starting with an experimental storage engine (Basically fundamental things required to make any kind of Database).
+This can be used for:
+- VK store obviously
+- Graph DB (with its ability to pinpoint the exact location of a node data on a storage file)
+- Log datatype - This is like blob, except it can be appended without bothering indexes or its existing payload. So it can store logs or large files (which makes more sense when streamed).
 
-# Fantasized Action Plan
+# What's in the Storage engine?
 
-## Version 1.0 - Initial Release
+_Will add this doc after renaming the project components. [Intresting story if wondering why this project has weird names](https://github.com/rishavbhowmik/xdb/wiki/Better-Name#story-of-logchain)_
 
-- [ ] One query at a time
-- [ ] Support Atomic Document CRUD operations
-- [ ] Support BTree Index
-- [ ] Support Hash Index
-- [ ] Support Unique Index
-- [ ] Single node DB server
-- [ ] Simple CLI for to try out the DB server
+But for now, We have:
 
-## Version 2.0 - Beta Release
+1. `storage` - A page store, where a file is segregated into pages (blocks of fixed size). Each page has a page index. This is the primary storage engine.
 
-- [ ] Query pooling
-- [ ] Atomic arrangement of Document CRUD operations for pooled queries
-- [ ] Add multi-threaded index Read operations
-- [ ] Cypher Query Language support
-- [ ] Basic user authentication with DB server
+2. `page-list` (called `logchain` for now!) - A chain of pages that can be used to store data over multiple pages, where each page stores some segment of the data along with page_index of the next page. So this module has abstract functions to do that on top of the storage module.
 
-## Version 3.0 - Let's find a good name for this project
+3. `index` - A module to provide HashMapIndex, UniqueHashMapIndex, BTreeIndex & UniqueBTreeIndex. And CRUD indexes in the storage, with help of the page-list module.
 
-- [ ] Implement master-master protocol
-- [ ] Add support for multiple DB servers
-- [ ] User authentication w r t multiple DB servers
-- [ ] ssh bases user authentication
+# Desparatly looking for contributors
+
+To be fair, I am still learning Rust and Computer Science in general. I am no pro with databases, just trying to make one as I think I can.
+
+So If you are a pro and see something good can come out of this project or wish to drive it to something better, please feel free to contribute.
+
+And if you are a beginner or some who just wants to learn Rust or how Databases work, I am sure you can learn and experience a lot from this project. This project requires everything, right from using FileSystem, Data Structures, understanding of core concepts of Rust, Multithreading, Concurrency, Channeling, Mutexes, Networking, Auth, etc.
+
+**Let's have some fun!**
