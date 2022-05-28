@@ -68,7 +68,7 @@ fn make_segment_payload_list_new_storage() {
         15_u8, 16_u8,
     ];
     let result = make_segment_payload_list(&mut storage, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (segment_list, first_block_index, last_block_index) = result.unwrap();
     // ([(0, [1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8]), (1, [255, 255, 255, 255, 9, 10, 11, 12, 13, 14, 15, 16])], 0, 1)
     assert_eq!(first_block_index, 0);
@@ -86,7 +86,7 @@ fn make_segment_payload_list_new_storage() {
         43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = make_segment_payload_list(&mut storage, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (segment_list, first_block_index, last_block_index) = result.unwrap();
     // ([(0, [(0, [1, 0, 0, 0, 17, 18, 19, 20, 21, 22, 23, 24]), (1, [2, 0, 0, 0, 25, 26, 27, 28, 29, 30, 31, 32]), (2, [3, 0, 0, 0, 33, 34, 35, 36, 37, 38, 39, 40]), (3, [4, 0, 0, 0, 41, 42, 43, 44, 45, 46, 47, 48]), (4, [255, 255, 255, 255, 49, 50, 51, 52])], 0, 4)
     assert_eq!(first_block_index, 0);
@@ -110,7 +110,7 @@ fn make_segment_payload_list_new_storage() {
     // check empty log
     let empty_log_data = vec![];
     let result = make_segment_payload_list(&mut storage, &empty_log_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (segment_list, first_block_index, last_block_index) = result.unwrap();
     // [(0, [255, 255, 255, 255])], 0, 0
     assert_eq!(first_block_index, 0);
@@ -149,7 +149,7 @@ fn make_segment_payload_list_existing_storage() {
         15_u8, 16_u8,
     ];
     let result = make_segment_payload_list(&mut storage, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (segment_list, first_block_index, last_block_index) = result.unwrap();
     // ([(0, [1, 0, 0, 0, 1, 2, 3, 4]), (1, [3, 0, 0, 0, 5, 6, 7, 8]), (3, [6, 0, 0, 0, 9, 10, 11, 12]), (6, [255, 255, 255, 255, 13, 14, 15, 16])], 0 , 6)
     assert_eq!(first_block_index, 0);
@@ -171,7 +171,7 @@ fn make_segment_payload_list_existing_storage() {
         43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = make_segment_payload_list(&mut storage, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (segment_list, first_block_index, last_block_index) = result.unwrap();
     // ([(0, [1, 0, 0, 0, 17, 18, 19, 20]), (1, [3, 0, 0, 0, 21, 22, 23, 24]), (3, [6, 0, 0, 0, 25, 26, 27, 28]), (6, [7, 0, 0, 0, 29, 30, 31, 32]), (7, [8, 0, 0, 0, 33, 34, 35, 36]), (8, [9, 0, 0, 0, 37, 38, 39, 40]), (9, [10, 0, 0, 0, 41, 42, 43, 44]), (10, [11, 0, 0, 0, 45, 46, 47, 48]), (11, [255, 255, 255, 255, 49, 50, 51, 52])], 0, 11)
     assert_eq!(first_block_index, 0);
@@ -199,7 +199,7 @@ fn make_segment_payload_list_existing_storage() {
     // empty log
     let log_2_data = vec![];
     let result = make_segment_payload_list(&mut storage, &log_2_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (segment_list, first_block_index, last_block_index) = result.unwrap();
     // [(0, [255, 255, 255, 255])], 0, 0
     assert_eq!(first_block_index, 0);
@@ -246,7 +246,7 @@ fn create_log_new_storage() {
         15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (0, 3)
     assert_eq!(first_block_index, 0);
@@ -262,7 +262,7 @@ fn create_log_new_storage() {
         43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = create_log(&mut storage, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (4, 12)
     assert_eq!(first_block_index, 4);
@@ -274,7 +274,7 @@ fn create_log_new_storage() {
     // write empty log
     let log_2_data = vec![];
     let result = create_log(&mut storage, &log_2_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (13, 13)
     assert_eq!(first_block_index, 13);
@@ -317,7 +317,7 @@ fn create_log_existing_storage() {
         15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (0, 6)
     assert_eq!(first_block_index, 0);
@@ -333,7 +333,7 @@ fn create_log_existing_storage() {
         43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = create_log(&mut storage, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (7, 15)
     assert_eq!(first_block_index, 7);
@@ -345,7 +345,7 @@ fn create_log_existing_storage() {
     // write empty log
     let log_2_data = vec![];
     let result = create_log(&mut storage, &log_2_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (16, 16)
     assert_eq!(first_block_index, 16);
@@ -389,7 +389,7 @@ fn append_log_new_storage() {
         15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (0, 1)
     assert_eq!(first_block_index, 0);
@@ -403,7 +403,7 @@ fn append_log_new_storage() {
     // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with single traversal
     let log_0_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, last_block_index, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 2);
     let actual = read_full_file(tmp_file_path);
@@ -413,7 +413,7 @@ fn append_log_new_storage() {
     // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with traversal from start of log
     let log_0_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, 0, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 3);
     let actual = read_full_file(tmp_file_path);
@@ -423,7 +423,7 @@ fn append_log_new_storage() {
     // append log 0 - [4, 3, 2, 1] - cover partial new block
     let log_0_data = vec![4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, last_block_index, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 4);
     let actual = read_full_file(tmp_file_path);
@@ -433,7 +433,7 @@ fn append_log_new_storage() {
     // append log 0 - [2, 1] - cover partial last block
     let log_0_data = vec![2_u8, 1_u8];
     let result = append_log(&mut storage, last_block_index, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 4);
     let actual = read_full_file(tmp_file_path);
@@ -444,7 +444,7 @@ fn append_log_new_storage() {
     // append log 0 - [2,1] - cover partial last block (end of block)
     let log_0_data = vec![2_u8, 1_u8];
     let result = append_log(&mut storage, last_block_index, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 4);
     let actual = read_full_file(tmp_file_path);
@@ -456,7 +456,7 @@ fn append_log_new_storage() {
     // append log 0 - [4, 3, 2, 1] - cover partial new block
     let log_0_data = vec![4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, last_block_index, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 5);
     let actual = read_full_file(tmp_file_path);
@@ -468,7 +468,7 @@ fn append_log_new_storage() {
     // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - cover full new block with no traverse and end at new block
     let log_0_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, last_block_index, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 6);
     let actual = read_full_file(tmp_file_path);
@@ -484,7 +484,7 @@ fn append_log_new_storage() {
         &mut storage,
         &[1_u8, 2_u8, 3_u8, 4_u8, 5_u8, 6_u8, 7_u8, 8_u8],
     );
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (7, 7)
     assert_eq!(first_block_index, 7);
@@ -502,7 +502,7 @@ fn append_log_new_storage() {
         6_u8, 5_u8, 4_u8, 3_u8, 2_u8,
     ];
     let result = append_log(&mut storage, last_block_index, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 11);
     let actual = read_full_file(tmp_file_path);
@@ -514,7 +514,7 @@ fn append_log_new_storage() {
     // append log 0 - [1]
     let log_0_data = vec![1_u8];
     let result = append_log(&mut storage, log_0_last_block_lock, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, log_0_last_block_lock);
     let actual = read_full_file(tmp_file_path);
@@ -524,7 +524,7 @@ fn append_log_new_storage() {
     // append log 0 - [2, 1] - traverse from start
     let log_0_data = vec![2_u8, 1_u8];
     let result = append_log(&mut storage, log_0_first_block_index, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, log_0_last_block_lock);
     let actual = read_full_file(tmp_file_path);
@@ -535,7 +535,7 @@ fn append_log_new_storage() {
     // append log 0 - [8, 7, 6, 5, 4, 3, 2, 1] - traverse from start
     let log_0_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, log_0_first_block_index, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 12);
     let actual = read_full_file(tmp_file_path);
@@ -547,7 +547,7 @@ fn append_log_new_storage() {
     // append log 1 - [1] - traverse from start
     let log_1_data = vec![5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, log_1_first_block_lock, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 13);
     let actual = read_full_file(tmp_file_path);
@@ -563,7 +563,7 @@ fn append_log_new_storage() {
         6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
     ];
     let result = append_log(&mut storage, log_1_last_block_lock, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, 17);
     let actual = read_full_file(tmp_file_path);
@@ -577,7 +577,7 @@ fn append_log_new_storage() {
     // append log 1
     let log_1_data = vec![2_u8, 1_u8];
     let result = append_log(&mut storage, log_1_last_block_lock, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let last_block_index = result.unwrap();
     assert_eq!(last_block_index, log_1_last_block_lock);
     let actual = read_full_file(tmp_file_path);
@@ -619,7 +619,7 @@ fn delete_log_new_storage() {
         15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
 
     // write log 1
     let log_1_data = vec![
@@ -628,7 +628,7 @@ fn delete_log_new_storage() {
         43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = create_log(&mut storage, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     // (4, 12)
     assert_eq!(first_block_index, 4);
@@ -643,7 +643,7 @@ fn delete_log_new_storage() {
         79_u8, 80_u8, 81_u8, 82_u8, 83_u8, 84_u8, 85_u8, 86_u8, 87_u8, 88_u8,
     ];
     let result = create_log(&mut storage, &log_2_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
 
     // (13, 21)
@@ -661,14 +661,14 @@ fn delete_log_new_storage() {
         134_u8, 135_u8, 136_u8, 137_u8,
     ];
     let result = create_log(&mut storage, &log_3_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let expected = fetch_state("4logs.hex");
     let actual = read_full_file(tmp_file_path);
     assert_eq!(actual, expected);
 
     // delete log 1
     let result = delete_log(&mut storage, first_block_index_l1, true);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     assert_eq!(first_block_index, first_block_index_l1);
     assert_eq!(last_block_index, last_block_index_l1);
@@ -678,7 +678,7 @@ fn delete_log_new_storage() {
 
     // soft delete log 2
     let result = delete_log(&mut storage, first_block_index_l2, false);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     assert_eq!(first_block_index, first_block_index_l2);
     assert_eq!(last_block_index, last_block_index_l2);
@@ -715,14 +715,14 @@ fn read_log_new_storage() {
         15_u8, 16_u8,
     ];
     let result = create_log(&mut storage, &log_0_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     let log_0_first_block_index = first_block_index;
     let log_0_last_block_index = last_block_index;
     {
         // test read_block for block_0
         let result = read_log(&mut storage, log_0_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_0_first_block_index);
         assert_eq!(last_block_index, log_0_last_block_index);
@@ -735,14 +735,14 @@ fn read_log_new_storage() {
         43_u8, 44_u8, 45_u8, 46_u8, 47_u8, 48_u8, 49_u8, 50_u8, 51_u8, 52_u8,
     ];
     let result = create_log(&mut storage, &log_1_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     let log_1_first_block_index = first_block_index;
     let log_1_last_block_index = last_block_index;
     {
         // test read_block for block_1
         let result = read_log(&mut storage, log_1_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_1_first_block_index);
         assert_eq!(last_block_index, log_1_last_block_index);
@@ -756,14 +756,14 @@ fn read_log_new_storage() {
         92_u8, 93_u8, 94_u8, 95_u8, 96_u8, 97_u8, 98_u8, 99_u8, 100_u8,
     ];
     let result = create_log(&mut storage, &log_2_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let (first_block_index, last_block_index) = result.unwrap();
     let log_2_first_block_index = first_block_index;
     let log_2_last_block_index = last_block_index;
     {
         // test read_block for block_2
         let result = read_log(&mut storage, log_2_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_2_first_block_index);
         assert_eq!(last_block_index, log_2_last_block_index);
@@ -772,7 +772,7 @@ fn read_log_new_storage() {
     {
         // test read_block for block_0
         let result = read_log(&mut storage, log_0_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_0_first_block_index);
         assert_eq!(last_block_index, log_0_last_block_index);
@@ -781,7 +781,7 @@ fn read_log_new_storage() {
     {
         // test read_block for block_1
         let result = read_log(&mut storage, log_1_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_1_first_block_index);
         assert_eq!(last_block_index, log_1_last_block_index);
@@ -791,14 +791,14 @@ fn read_log_new_storage() {
     // - log 0
     let log_0_append_data = vec![8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8];
     let result = append_log(&mut storage, log_0_first_block_index, &log_0_append_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let log_0_last_block_index = result.unwrap();
     let mut log_0_data = log_0_data;
     log_0_data.extend_from_slice(&log_0_append_data);
     {
         // test read_block for block_0
         let result = read_log(&mut storage, log_0_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_0_first_block_index);
         assert_eq!(last_block_index, log_0_last_block_index);
@@ -810,14 +810,14 @@ fn read_log_new_storage() {
         2_u8, 1_u8,
     ];
     let result = append_log(&mut storage, log_1_first_block_index, &log_1_append_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let log_1_last_block_index = result.unwrap();
     let mut log_1_data = log_1_data;
     log_1_data.extend_from_slice(&log_1_append_data);
     {
         // test read_block for block_1
         let result = read_log(&mut storage, log_1_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_1_first_block_index);
         assert_eq!(last_block_index, log_1_last_block_index);
@@ -830,14 +830,14 @@ fn read_log_new_storage() {
         9_u8, 8_u8, 7_u8, 6_u8, 5_u8, 4_u8, 3_u8, 2_u8, 1_u8,
     ];
     let result = append_log(&mut storage, log_2_first_block_index, &log_2_append_data);
-    assert_eq!(result.is_ok(), true);
+    assert!(result.is_ok());
     let log_2_last_block_index = result.unwrap();
     let mut log_2_data = log_2_data;
     log_2_data.extend_from_slice(&log_2_append_data);
     {
         // test read_block for block_2
         let result = read_log(&mut storage, log_2_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_2_first_block_index);
         assert_eq!(last_block_index, log_2_last_block_index);
@@ -846,7 +846,7 @@ fn read_log_new_storage() {
     {
         // test read_block for block_0
         let result = read_log(&mut storage, log_0_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_0_first_block_index);
         assert_eq!(last_block_index, log_0_last_block_index);
@@ -855,7 +855,7 @@ fn read_log_new_storage() {
     {
         // test read_block for block_1
         let result = read_log(&mut storage, log_1_first_block_index);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
         let (first_block_index, last_block_index, log_data) = result.unwrap();
         assert_eq!(first_block_index, log_1_first_block_index);
         assert_eq!(last_block_index, log_1_last_block_index);
