@@ -1,3 +1,12 @@
+pub enum Env {
+    Dev,
+    Test,
+    Prod,
+}
+
+/// Enviornment to compile for.
+pub const ENV: Env = Env::Dev;
+
 pub mod byte_cursor;
 pub mod error;
 
