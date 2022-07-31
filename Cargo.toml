@@ -2,7 +2,8 @@
 
 members = [
     "util",
-    "storage",
-    "logchain",
-    "index",
+    # "storage",
+    # "logchain",
+    # "index",
+    "storage_engine/page_store",
 ]
