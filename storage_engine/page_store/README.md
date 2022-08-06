@@ -4,9 +4,9 @@ PageStore module is for storing pages in a storage file, and perform CRUD operat
 
 ## What is a page?
 
-A page is a storage unit of constant size (this constant size is `page_length`).
+A page is a storage unit of constant size (The fixed length of the page is `page_length`).
 
-Each page can store data of size less or equal to `page_length`.
+Each page can store data of size less or equal to the `page_length`.
 
 ### Terminologies
 
@@ -27,17 +27,17 @@ Each page can store data of size less or equal to `page_length`.
 
 #### Size of `page_payload_length` little endian byte representation
 
-The size this page header depends on the constant page length. We have made it adaptive to make storage more efficient.
+`page_payload_length` is an unsigned integer stored in little-endian format. Since the maximum value of `page_payload_length` is always less than `page_length`, we have implemented adaptive byte representation to save storage space & reduce traversal time.
 
-| Page length             | Bytes required |
-| ----------------------- | -------------- |
-| <= 255                  | 1              |
-| <= 65535                | 2              |
-| <= 4294967295           | 4              |
-| <= 18446744073709551615 | 8              |
+| Page length             | Unsigned integer type | Bytes required |
+| ----------------------- | --------------------- | -------------- |
+| <= 255                  | u8                    | 1              |
+| <= 65535                | u16                   | 2              |
+| <= 4294967295           | u32                   | 4              |
+| <= 18446744073709551615 | u64                   | 8              |
 
-To manage this unsigned integer with adaptive byte representation, we use `PageUsizeType`.
-
+> To implement unsigned integer with adaptive byte representation, we use `PageUsizeType`.
+>
 > Check `storage_engine/page_store/src/page_usize.rs` to find more.
 
 ## Layout of storage file
@@ -57,7 +57,7 @@ To manage this unsigned integer with adaptive byte representation, we use `PageU
 | so on...                                           |
 ```
 
-First 8 bytes are for constant page length, stored as little endian 64-bit unsigned integer. (This is not adaptive & requires 8 bytes)
+The first 8 bytes are reserved for storing u64 integer in little-endian format.
 
 ## How to use PageStore
 
