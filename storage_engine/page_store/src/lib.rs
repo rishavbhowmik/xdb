@@ -45,20 +45,20 @@ impl PageSettings {
 
 pub struct PageStore {
     page_settings: PageSettings,
-    /// last_page_index + 1 is the number of pages
+    /// last_page_index + 1, which means total number of pages in the store (allocated and empty)
     page_count: usize,
+    /// Set of page_index of empty pages (allocated before but deleted later)
     empty_page_index_set: std::collections::BTreeSet<usize>,
-    /// file ptr for page store file
+    /// file ptr for storage file
     file: std::fs::File,
 }
 
 impl PageStore {
     /// Read page store header from file and return parsed page store header
     fn read_page_store_header(file: &mut std::fs::File) -> Result<PageStoreHeaders, Error> {
-        let mut buf = [0u8; PAGE_HEADER_LEN];
+        let mut buffer = [0u8; PAGE_HEADER_LEN];
 
-        // - seek to the beginning of the file
-        // - read the page header
+        // Seek to the beginning of the file & read page header
         use std::io::{Read, Seek};
         match file.seek(std::io::SeekFrom::Start(0)) {
             Ok(_) => (),
@@ -70,7 +70,7 @@ impl PageStore {
                 ))
             }
         }
-        match file.read(&mut buf) {
+        match file.read(&mut buffer) {
             Ok(bytes_read) => {
                 if bytes_read != PAGE_HEADER_LEN {
                     return Err(Error::new(
@@ -92,8 +92,8 @@ impl PageStore {
             }
         }
 
-        // Parse the page header from the bytes
-        Ok(PageStoreHeaders::from_bytes(buf))
+        // Parse the page header
+        Ok(PageStoreHeaders::from_bytes(buffer))
     }
 
     /// Write page store header to file
@@ -103,8 +103,8 @@ impl PageStore {
         page_store_headers: &PageStoreHeaders,
     ) -> Result<(), Error> {
         let bytes = page_store_headers.to_bytes();
-        // - seek to the beginning of the file
-        // - write the page header
+
+        // Seek to the beginning of the file & write page header
         use std::io::{Seek, Write};
         match self.file.seek(std::io::SeekFrom::Start(0)) {
             Ok(_) => (),
@@ -235,9 +235,7 @@ impl PageStore {
         ]
         .concat();
 
-        // Write page payload to file
-        // - seek to page offset
-        // - write page payload
+        // Seek to page offset & write page payload
         let page_offset = PAGE_HEADER_LEN + page_index * self.page_settings.page_len;
         use std::io::{Seek, Write};
         match self.file.seek(std::io::SeekFrom::Start(page_offset as u64)) {
@@ -277,6 +275,7 @@ impl PageStore {
 
         // Remove page index from empty page index set
         self.empty_page_index_set.remove(&page_index);
+
         // If page_index point to new last page, increase page count
         // NOTE: Case where page index is greater than page_count is handled in debugging mode
         if page_index == self.page_count {
@@ -510,10 +509,7 @@ impl PageStore {
 
     /// ### Constructor: Open new page store (truncates the file if exists)
     pub fn open_new(file_path: &str, page_len: usize) -> Result<PageStore, Error> {
-        // - Open the file
-        // - Intialize the page store
-        // - Write page header to file
-
+        // Open new file
         let file = match std::fs::File::options()
             .create_new(true)
             .read(true)
@@ -531,6 +527,8 @@ impl PageStore {
                 ))
             }
         };
+
+        // Initialize page store
         let page_settings = PageSettings::new(page_len);
         let page_count: usize = 0;
         let empty_page_index_set: std::collections::BTreeSet<usize> =
@@ -542,6 +540,7 @@ impl PageStore {
             file,
         };
 
+        // Write page header to file
         let page_store_header = PageStoreHeaders::new(page_len);
         page_store.write_page_store_header(&page_store_header)?;
 
@@ -556,6 +555,7 @@ impl PageStore {
         // - Initialize the page store
         // - Return PageStore object with populated page count and empty page index set
 
+        // Open existing storage file
         let mut file = match std::fs::File::options()
             .create_new(false)
             .read(true)
@@ -574,6 +574,7 @@ impl PageStore {
             }
         };
 
+        // Check file size
         let file_size = match file.metadata() {
             Ok(metadata) => metadata.len() as usize,
             Err(e) => {
@@ -585,11 +586,13 @@ impl PageStore {
             }
         };
 
+        // Read page header from file (includes page_length)
         let page_store_headers = Self::read_page_store_header(&mut file)?;
 
         let page_len = page_store_headers.page_len as usize;
         let page_settings = PageSettings::new(page_len);
 
+        // Calculate page count
         let total_page_len_sum = file_size - PAGE_HEADER_LEN;
         let page_count = (total_page_len_sum / page_len)
             + if (total_page_len_sum % page_len) > 0 {
@@ -598,6 +601,7 @@ impl PageStore {
                 0
             };
 
+        // Initialize page store object
         let mut page_store = PageStore {
             page_settings,
             page_count,
@@ -605,12 +609,11 @@ impl PageStore {
             file,
         };
 
-        {
-            for page_index in 0..page_count {
-                let page_payload_size = page_store.read_page_payload_size(page_index)?;
-                if page_payload_size == 0 {
-                    page_store.empty_page_index_set.insert(page_index);
-                }
+        // Populate empty_page_index_set of page store object
+        for page_index in 0..page_count {
+            let page_payload_size = page_store.read_page_payload_size(page_index)?;
+            if page_payload_size == 0 {
+                page_store.empty_page_index_set.insert(page_index);
             }
         }
 
