@@ -70,19 +70,8 @@ impl PageStore {
                 ))
             }
         }
-        match file.read(&mut buffer) {
-            Ok(bytes_read) => {
-                if bytes_read != PAGE_HEADER_LEN {
-                    return Err(Error::new(
-                        ErrorType::Critical,
-                        "read_page_store_header_read_failed",
-                        Some(format!(
-                            "read {} bytes, expected {} bytes",
-                            bytes_read, PAGE_HEADER_LEN
-                        )),
-                    ));
-                }
-            }
+        match file.read_exact(&mut buffer) {
+            Ok(_) => (),
             Err(e) => {
                 return Err(Error::new(
                     ErrorType::Critical,
@@ -325,28 +314,14 @@ impl PageStore {
         // Read & parse page_payload_size
         let page_payload_size_buf_len = PageUsizeType::size_of(self.page_settings.page_size_type); // Size of 'int as bytes'
         let mut page_payload_size_bytes = vec![0; page_payload_size_buf_len];
-        match self.file.read(&mut page_payload_size_bytes) {
-            Ok(bytes_read) => {
-                if bytes_read != page_payload_size_buf_len {
-                    return Err(Error::new(
-                        ErrorType::Critical,
-                        "page_store_read_page_read_fail",
-                        Some(format!(
-                            "Failed to read all bytes: page_index: {}",
-                            page_index
-                        )),
-                    ));
-                }
-            }
-            Err(err) => {
+        match self.file.read_exact(&mut page_payload_size_bytes) {
+            Ok(_) => (),
+            Err(e) => {
                 return Err(Error::new(
                     ErrorType::Critical,
-                    "page_store_read_page_read_fail",
-                    Some(format!(
-                        "Error on reading: page_index: {}, err: {:?}",
-                        page_index, err
-                    )),
-                ))
+                    "read_page_store_header_read_failed",
+                    Some(format!("{}", e)),
+                ));
             }
         }
         let page_payload_size =
@@ -354,28 +329,14 @@ impl PageStore {
 
         // Read page_payload
         let mut page_payload_bytes = vec![0; page_payload_size];
-        match self.file.read(&mut page_payload_bytes) {
-            Ok(bytes_read) => {
-                if bytes_read != page_payload_size {
-                    return Err(Error::new(
-                        ErrorType::Critical,
-                        "page_store_read_page_read_fail",
-                        Some(format!(
-                            "Failed to read all bytes: page_index: {}",
-                            page_index
-                        )),
-                    ));
-                }
-            }
-            Err(err) => {
+        match self.file.read_exact(&mut page_payload_bytes) {
+            Ok(_) => (),
+            Err(e) => {
                 return Err(Error::new(
                     ErrorType::Critical,
-                    "page_store_read_page_read_fail",
-                    Some(format!(
-                        "Error on reading: page_index: {}, err: {:?}",
-                        page_index, err
-                    )),
-                ))
+                    "read_page_store_header_read_failed",
+                    Some(format!("{}", e)),
+                ));
             }
         }
 
@@ -422,28 +383,14 @@ impl PageStore {
         // Read & parse page_payload_size
         let page_payload_size_buf_len = PageUsizeType::size_of(self.page_settings.page_size_type);
         let mut page_payload_size_bytes = vec![0; page_payload_size_buf_len];
-        match self.file.read(&mut page_payload_size_bytes) {
-            Ok(bytes_read) => {
-                if bytes_read != page_payload_size_buf_len {
-                    return Err(Error::new(
-                        ErrorType::Critical,
-                        "page_store_read_page_payload_size_read_fail",
-                        Some(format!(
-                            "Failed to read all bytes: page_index: {}",
-                            page_index
-                        )),
-                    ));
-                }
-            }
-            Err(err) => {
+        match self.file.read_exact(&mut page_payload_size_bytes) {
+            Ok(_) => (),
+            Err(e) => {
                 return Err(Error::new(
                     ErrorType::Critical,
-                    "page_store_read_page_payload_size_read_fail",
-                    Some(format!(
-                        "Error on reading: page_index: {}, err: {:?}",
-                        page_index, err
-                    )),
-                ))
+                    "read_page_store_header_read_failed",
+                    Some(format!("{}", e)),
+                ));
             }
         }
 
