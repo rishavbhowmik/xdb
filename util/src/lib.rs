@@ -4,7 +4,7 @@ pub enum Env {
     Prod,
 }
 
-/// Enviornment to compile for
+/// Environment to compile for
 pub const ENV: Env = Env::Dev;
 
 pub mod byte_cursor;
