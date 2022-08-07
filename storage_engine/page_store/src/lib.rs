@@ -7,7 +7,7 @@ use util::{Env, ENV};
 use page_usize::{page_usize_from_le_bytes, page_usize_to_le_bytes, PageUsizeType};
 
 pub struct PageStoreHeaders {
-    page_len: u64, // 8 bytes to store the page length in little endian
+    page_len: u64,
 }
 impl PageStoreHeaders {
     pub fn new(page_len: usize) -> Self {
@@ -132,16 +132,18 @@ impl PageStore {
 
     /// Page indexes to write data to
     /// - Collect empty page indexes
-    /// - If not enough empty pages, append new pages beyond the last page
+    /// - If enough empty_pages are not found, then append new pages beyond the last page
+    /// - Returns page_indexes in assending order
     pub fn get_page_indexes_for_writes(&self, page_count: usize) -> Result<Vec<usize>, Error> {
         let mut page_indexes: Vec<usize> = vec![];
 
-        // Get empty page indexes, sorted assending order
-        for index in self.empty_page_index_set.iter().cloned() {
+        // Collect empty page indexes (ascending order)
+        // Note: All items in BtreeSet::iter() are stored in ascending order - https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=21e15f83c00b3c2423046f1eae4ce46e
+        for page_index in self.empty_page_index_set.iter().cloned() {
             if page_indexes.len() >= page_count {
                 break;
             }
-            page_indexes.push(index);
+            page_indexes.push(page_index);
         }
 
         // If not enough empty pages, append new pages beyond the last page
@@ -151,7 +153,7 @@ impl PageStore {
             page_indexes.extend(extended_page_index_range);
         }
 
-        Ok(page_indexes)
+        Ok(page_indexes) // Already in ascending order [...empty_page_indexes, ...page_indexes_beyond_last_page]
     }
 
     fn page_offset(&self, page_index: usize) -> usize {
@@ -225,7 +227,7 @@ impl PageStore {
         .concat();
 
         // Seek to page offset & write page payload
-        let page_offset = PAGE_HEADER_LEN + page_index * self.page_settings.page_len;
+        let page_offset = self.page_offset(page_index);
         use std::io::{Seek, Write};
         match self.file.seek(std::io::SeekFrom::Start(page_offset as u64)) {
             Ok(_) => (),
@@ -496,12 +498,6 @@ impl PageStore {
 
     /// ### Constructor: Open existing page store
     pub fn open_existing(file_path: &str) -> Result<PageStore, Error> {
-        // - Open the file
-        // - Check file size, and calculate the page_count
-        // - Read page header from file
-        // - Initialize the page store
-        // - Return PageStore object with populated page count and empty page index set
-
         // Open existing storage file
         let mut file = match std::fs::File::options()
             .create_new(false)
