@@ -18,7 +18,7 @@ Each page can store data of size less or equal to the `page_length`.
 ### Layout of a page
 
 ```txt
-|--------------------------------------|
+| -------------------------------------- |
 | page_payload_length as little endian   | <- Page header |
 | -------------------------------------- |
 | page_payload                           | <- Page data   |
@@ -43,18 +43,18 @@ Each page can store data of size less or equal to the `page_length`.
 ## Layout of storage file
 
 ```txt
-|----------------------------------------------------| ---------------------- | 
-| Page length        <8 Bytes>                       | <- Page store header   |
-| -------------------------------------------------- | ---------------------- | ---------------------- |
-| page_payload_length as LE bytes                    | <- Page header         |                        |
-| -------------------------------------------------- | ---------------------- | <- Page index 0        |
-| page_payload       <page_payload_length bytes>     | <- Page data           |                        |
-| --------------------------------------             | ---------------------- | ---------------------- |
-| Block 2 dataSize <4 Bytes>                         | <- Block header        |                        |
-| ----------------------------                       | ---------------------- | <- Page index 1        |
-| Block 2 Data    <BLOCK_LEN>                        | <- Block data          |                        |
-| -------------------------------------------------- | ---------------------- | ---------------------- |
-| so on...                                           |
+| ---------------------------------------------------- |----------------------- | 
+| Page length        <8 Bytes>                         | <- Page store header    |
+| ---------------------------------------------------- | ----------------------- | ----------------------- |
+| page_payload_length as LE bytes                      | <- Page header          |                         |
+| ---------------------------------------------------- | ----------------------- | <- Page index 0         |
+| page_payload       <page_payload_length bytes>       | <- Page data            |                         |
+| ---------------------------------------------------- | ----------------------- | ----------------------- |
+| Block 2 dataSize <4 Bytes>                           | <- Block header         |                         |
+| ---------------------------------------------------- | ----------------------- | <- Page index 1         |
+| Block 2 Data    <BLOCK_LEN>                          | <- Block data           |                         |
+| ---------------------------------------------------- | ----------------------- | ----------------------- |
+| so on...                                             |
 ```
 
 The first 8 bytes are reserved for storing u64 integer in little-endian format.
