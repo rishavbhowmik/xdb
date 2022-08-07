@@ -43,7 +43,7 @@ Each page can store data of size less or equal to the `page_length`.
 ## Layout of storage file
 
 ```txt
-| ---------------------------------------------------- |----------------------- | 
+| ---------------------------------------------------- | ----------------------- | 
 | Page length        <8 Bytes>                         | <- Page store header    |
 | ---------------------------------------------------- | ----------------------- | ----------------------- |
 | page_payload_length as LE bytes                      | <- Page header          |                         |
