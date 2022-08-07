@@ -43,21 +43,44 @@ Each page can store data of size less or equal to the `page_length`.
 ## Layout of storage file
 
 ```txt
-| ---------------------------------------------------- | ----------------------- | 
-| Page length        <8 Bytes>                         | <- Page store header    |
-| ---------------------------------------------------- | ----------------------- | ----------------------- |
-| page_payload_length as LE bytes                      | <- Page header          |                         |
-| ---------------------------------------------------- | ----------------------- | <- Page index 0         |
-| page_payload       <page_payload_length bytes>       | <- Page data            |                         |
-| ---------------------------------------------------- | ----------------------- | ----------------------- |
-| Block 2 dataSize <4 Bytes>                           | <- Block header         |                         |
-| ---------------------------------------------------- | ----------------------- | <- Page index 1         |
-| Block 2 Data    <BLOCK_LEN>                          | <- Block data           |                         |
-| ---------------------------------------------------- | ----------------------- | ----------------------- |
-| so on...                                             |
+| ----------------------------------------------------------- | --------------------------- | 
+| Page length        <8 Bytes>                                | <- Page store header        |
+| ----------------------------------------------------------- | --------------------------- | ----------------------- |
+| page_payload_length as LE bytes                             | <- Page header              |                         |
+| ----------------------------------------------------------- | --------------------------- | <- Page index 0         |
+| page_payload + page_padding     <page_payload_length bytes> | <- Page body                |                         |
+| ----------------------------------------------------------- | --------------------------- | ----------------------- |
+| page_payload_length as LE bytes                             | <- Page header              |                         |
+| ----------------------------------------------------------- | --------------------------- | <- Page index 1         |
+| page_payload + page_padding     <page_payload_length bytes> | <- Page body                |                         |
+| ----------------------------------------------------------- | --------------------------- | ----------------------- |
+| so on...                                                    |
 ```
 
-The first 8 bytes are reserved for storing u64 integer in little-endian format.
+- The first 8 bytes are reserved for storing u64 integer in little-endian format.
+- Inside each page
+  - Page payload length is stored in little-endian format. The number of bytes required is determined by logic in `PageUsize`.
+  - Page payload is stored in the page body.
+  - The remaining space of the page body is the page padding. (Page padding may not exist is the last page if entire page was never filled)
+
+### Example
+
+```txt
+PageLength: 10
+PageCount: 2
+
+| ---------------------------------------------------- | --------------------------- | 
+| [10, 0, 0, 0, 0, 0, 0, 0]         <8 Bytes>          | <- Page store header        |
+| ---------------------------------------------------- | --------------------------- | ----------------------- |
+| [5]             <1Byte>                              | <- Page header              |                         |
+| ---------------------------------------------------- | --------------------------- | <- Page index 0         |
+| [1, 2, 3, 4, 5, 0, 0, 0, 0]              <9 Bytes>   | <- Page data + Page padding |                         |
+| ---------------------------------------------------- | --------------------------- | ----------------------- |
+| [8]                                                  | <- Block header             |                         |
+| ---------------------------------------------------- | --------------------------- | <- Page index 1         |
+| [1, 2, 3, 4, 5, 6, 7, 8]              <9 Bytes>      | <- Page data + Page padding |                         |
+| ---------------------------------------------------- | --------------------------- | ----------------------- |
+```
 
 ## How to use PageStore
 
