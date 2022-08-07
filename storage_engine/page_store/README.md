@@ -36,7 +36,7 @@ Each page can store data of size less or equal to the `page_length`.
 | <= 4294967295           | u32                   | 4              |
 | <= 18446744073709551615 | u64                   | 8              |
 
-> To implement unsigned integer with adaptive byte representation, we use `PageUsizeType`.
+> To implement unsigned integer with adaptive byte representation, we use `PageUsize`.
 >
 > Check `storage_engine/page_store/src/page_usize.rs` to find more.
 
