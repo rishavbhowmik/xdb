@@ -99,15 +99,15 @@ fn main() {
     let page_index_list = result.unwrap();
 
     // Read data from page
-    let page_0_result = page_store.read_page(page_index_list[0]);
+    let page_0_result = page_store.read_page(page_index_list[0], None, None);
     assert_eq!(page_0_result.unwrap(), data_list[0]);
-    let page_1_result = page_store.read_page(page_index_list[1]);
+    let page_1_result = page_store.read_page(page_index_list[1], None, None);
     assert_eq!(page_1_result.unwrap(), data_list[1]);
 
     // Delete page
     let result = page_store.delete_page(page_index_list[0]);
     // Read deleted page & verify it is empty
-    let page_0_result = page_store.read_page(page_index_list[0]);
+    let page_0_result = page_store.read_page(page_index_list[0], None, None);
     assert_eq!(page_0_result.unwrap(), vec![]);
 }
 ```

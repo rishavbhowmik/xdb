@@ -279,9 +279,16 @@ impl PageStore {
     /// Read data from page store file at page index
     /// ### Parameter
     /// - `page_index`: page index to read data from
+    /// - `read_start`: Option<usize>,
+    /// - `read_end`: Option<usize>
     /// ### Order
     /// - Read operations must be performed in assending order of page indexes
-    pub fn read_page(&mut self, page_index: usize) -> Result<Vec<u8>, Error> {
+    pub fn read_page(
+        &mut self,
+        page_index: usize,
+        read_start: Option<usize>,
+        read_end: Option<usize>,
+    ) -> Result<Vec<u8>, Error> {
         if matches!(ENV, Env::Dev | Env::Test) {
             // Check if page index is not far beyond the last page
             // `page_index` must be in [0 .. page_count].
@@ -329,8 +336,48 @@ impl PageStore {
         let page_payload_size =
             page_usize_from_le_bytes(&page_payload_size_bytes, self.page_settings.page_size_type);
 
-        // Read page_payload
-        let mut page_payload_bytes = vec![0; page_payload_size];
+        // Compute start & end point of page_body to read
+        let page_body_read_start = match read_start {
+            Some(start) => start,
+            None => 0,
+        };
+        let page_body_read_end = match read_end {
+            Some(end) => {
+                if end > page_payload_size {
+                    page_payload_size
+                } else {
+                    end
+                }
+            }
+            None => page_payload_size,
+        };
+
+        if page_body_read_end <= page_body_read_start {
+            return Ok(vec![]);
+        }
+
+        let page_body_read_len = page_body_read_end - page_body_read_start;
+
+        // Seek to page body start offset & read page_payload of size page_body_read_len bytes
+        if page_body_read_start > 0 {
+            match self
+                .file
+                .seek(std::io::SeekFrom::Current(page_body_read_start as i64))
+            {
+                Ok(_) => (),
+                Err(err) => {
+                    return Err(Error::new(
+                        ErrorType::Critical,
+                        "page_store_read_page_seek_fail",
+                        Some(format!(
+                            "page_index: {}, page_body_start_offset: {}, err: {:?}",
+                            page_index, page_body_read_start, err
+                        )),
+                    ))
+                }
+            }
+        }
+        let mut page_payload_bytes = vec![0; page_body_read_len];
         match self.file.read_exact(&mut page_payload_bytes) {
             Ok(_) => (),
             Err(e) => {
