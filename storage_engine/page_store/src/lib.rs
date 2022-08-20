@@ -46,7 +46,7 @@ impl PageSettings {
 }
 
 pub struct PageStore {
-    page_settings: PageSettings,
+    pub page_settings: PageSettings,
     /// last_page_index + 1, which means total number of pages in the store (allocated and empty)
     page_count: usize,
     /// Set of page_index of empty pages (allocated before but deleted later)
