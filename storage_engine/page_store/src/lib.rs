@@ -484,8 +484,15 @@ impl PageStore {
         // Note: page_count is only incremental and depends last page index which is incremental too
     }
 
+    pub fn write_many_pages(&mut self, page_payload_map: &[(usize, &[u8])]) -> Result<(), Error> {
+        for (page_index, page_payload) in page_payload_map {
+            self.write_page(*page_index, page_payload, false)?;
+        }
+        Ok(())
+    }
+
     /// Safely write multiple pages
-    pub fn write_many_pages(&mut self, payloads: &[&[u8]]) -> Result<Vec<usize>, Error> {
+    pub fn auto_write_pages(&mut self, payloads: &[&[u8]]) -> Result<Vec<usize>, Error> {
         // allocate pages
         let page_index_list = self.get_page_indexes_for_writes(payloads.len())?;
 

@@ -95,7 +95,7 @@ fn main() {
     
     // Write data to page
     let data_list = [b"Hello World 1", b"Hello World 2"];
-    let result = page_store.write_many_pages(&data_list);
+    let result = page_store.auto_write_pages(&data_list);
     let page_index_list = result.unwrap();
 
     // Read data from page
