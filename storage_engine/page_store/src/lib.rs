@@ -1,4 +1,3 @@
-// pub mod file_commander;
 pub mod page_usize;
 
 use util::error::{Error, ErrorType};
@@ -138,7 +137,7 @@ impl PageStore {
         let mut page_indexes: Vec<usize> = vec![];
 
         // Collect empty page indexes (ascending order)
-        // Note: All items in BtreeSet::iter() are stored in ascending order - https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=21e15f83c00b3c2423046f1eae4ce46e
+        // BtreeSet::iter() iterates in ascending order of items in the BTree
         for page_index in self.empty_page_index_set.iter().cloned() {
             if page_indexes.len() >= page_count {
                 break;
@@ -212,7 +211,7 @@ impl PageStore {
 
         // Serialize page buffer
         let page_buffer = [
-            // Payload size as bytes
+            // Payload size as bytes - The page header
             page_usize_to_le_bytes(
                 if force_payload_size_0 {
                     0
@@ -221,7 +220,7 @@ impl PageStore {
                 },
                 self.page_settings.page_size_type,
             ),
-            // Payload bytes
+            // Payload bytes - The page payload
             page_payload.to_vec(),
         ]
         .concat();
