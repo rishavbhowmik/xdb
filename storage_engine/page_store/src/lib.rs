@@ -135,7 +135,7 @@ impl PageStore {
     /// Page indexes to write data to
     /// - Collect empty page indexes
     /// - If enough empty_pages are not found, then append new pages beyond the last page
-    /// - Returns page_indexes in assending order
+    /// - Returns page_indexes in ascending order
     pub fn get_page_indexes_for_writes(&self, page_count: usize) -> Result<Vec<usize>, Error> {
         let mut page_indexes: Vec<usize> = vec![];
 
@@ -170,7 +170,7 @@ impl PageStore {
     /// - `force_payload_size_0`: if true, store payload size as 0. (Used for hard delete, where we need to set payload size to 0 but also fill the page with something.)
     ///
     /// ### Order
-    /// - Write operations must be performed in assending order of page indexes
+    /// - Write operations must be performed in ascending order of page indexes
     pub fn write_page(
         &mut self,
         page_index: usize,
@@ -271,7 +271,7 @@ impl PageStore {
         // Remove page index from empty page index set
         self.empty_page_index_set.remove(&page_index);
 
-        // If page_index point to new last page, increase page count
+        // If page_index points to new last page, increase page count
         // NOTE: Case where page index is greater than page_count is handled in debugging mode
         if page_index == self.page_count {
             self.page_count += 1;
@@ -315,7 +315,7 @@ impl PageStore {
         self.empty_page_index_set.insert(page_index);
 
         Ok(())
-        // Note: page_count is only incremental and depends last page index which is incremental too
+        // Note: page_count is only incremental and depends on the last page index which is incremental too
     }
 
     /// Read data from page store file at page index
@@ -326,7 +326,7 @@ impl PageStore {
     /// - `read_end`: Option<usize>
     ///
     /// ### Order
-    /// - Read operations must be performed in assending order of page indexes
+    /// - Read operations must be performed in ascending order of page indexes
     pub fn read_page(
         &mut self,
         page_index: usize,
@@ -442,7 +442,7 @@ impl PageStore {
     /// - `page_index`: page index to read data from
     ///
     /// ### Order
-    /// - Read operations must be performed in assending order of page indexes
+    /// - Read operations must be performed in ascending order of page indexes
     pub fn read_page_payload_size(&mut self, page_index: usize) -> Result<usize, Error> {
         if matches!(ENV, Env::Dev | Env::Test) {
             // Check if page index is not far beyond the last page
@@ -544,7 +544,7 @@ impl PageStore {
             match self.write_page(*page_index, payload, false) {
                 Ok(_) => (),
                 Err(err) => {
-                    // Roll back attempt to write the pages
+                    // Rollback attempt to write the pages
                     for page_index in page_index_list.iter().rev() {
                         self.delete_page(*page_index, false)?;
                     }
@@ -664,7 +664,7 @@ impl PageStore {
     }
 }
 
-// implement assertion traits for PageStore
+// Implement assertion traits for PageStore
 impl std::fmt::Debug for PageStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "PageStore {{ page_count={}, page_size_type={}, page_len={}, page_capacity={}, empty_page_index_set={:?} }}",
