@@ -163,10 +163,12 @@ impl PageStore {
     }
 
     /// Write data to page store file at page index
+    ///
     /// ### Parameters
     /// - `page_index`: page index to write data to
     /// - `page_payload`: data to write to page store file
     /// - `force_payload_size_0`: if true, store payload size as 0. (Used for hard delete, where we need to set payload size to 0 but also fill the page with something.)
+    ///
     /// ### Order
     /// - Write operations must be performed in assending order of page indexes
     pub fn write_page(
@@ -278,11 +280,51 @@ impl PageStore {
         Ok(())
     }
 
+    /// Delete page from page_store
+    ///
+    /// ### Parameters
+    /// - `page_index`: page index of page to delete
+    /// - `hard_delete`: if true, rewrites page with 0s
+    pub fn delete_page(&mut self, page_index: usize, hard_delete: bool) -> Result<(), Error> {
+        if matches!(ENV, Env::Dev | Env::Test) {
+            // Check if page index is not out of range
+            // `page_index` must be in [0 .. page_count].
+            if page_index > self.page_count {
+                return Err(Error::new(
+                    ErrorType::Warning,
+                    "page_store_delete_page_page_index_out_of_range",
+                    Some(format!(
+                        "page_index: {}, page_count: {}",
+                        page_index, self.page_count
+                    )),
+                ));
+            }
+        }
+
+        // Remove page index from empty page index set
+        match hard_delete {
+            true => {
+                // Overwrite page index with 0s
+                self.write_page(page_index, &vec![0; self.page_settings.page_capacity], true)?
+                // Note:- Overwriting only the allocated bytes after reading page_payload_size is not worth an extra disk cycle(required to page_payload_size=0 in the end).
+            }
+            false => self.write_page(page_index, &[], false)?,
+        }
+
+        // Insert page index into empty page index set
+        self.empty_page_index_set.insert(page_index);
+
+        Ok(())
+        // Note: page_count is only incremental and depends last page index which is incremental too
+    }
+
     /// Read data from page store file at page index
+    ///
     /// ### Parameter
     /// - `page_index`: page index to read data from
     /// - `read_start`: Option<usize>,
     /// - `read_end`: Option<usize>
+    ///
     /// ### Order
     /// - Read operations must be performed in assending order of page indexes
     pub fn read_page(
@@ -395,8 +437,10 @@ impl PageStore {
     }
 
     /// Read size of page payload at page index
+    ///
     /// ### Parameter
     /// - `page_index`: page index to read data from
+    ///
     /// ### Order
     /// - Read operations must be performed in assending order of page indexes
     pub fn read_page_payload_size(&mut self, page_index: usize) -> Result<usize, Error> {
@@ -451,47 +495,47 @@ impl PageStore {
         ))
     }
 
-    pub fn delete_page(&mut self, page_index: usize, hard_delete: bool) -> Result<(), Error> {
-        if matches!(ENV, Env::Dev | Env::Test) {
-            // Check if page index is not out of range
-            // `page_index` must be in [0 .. page_count].
-            if page_index > self.page_count {
-                return Err(Error::new(
-                    ErrorType::Warning,
-                    "page_store_delete_page_page_index_out_of_range",
-                    Some(format!(
-                        "page_index: {}, page_count: {}",
-                        page_index, self.page_count
-                    )),
-                ));
-            }
-        }
-
-        // Remove page index from empty page index set
-        match hard_delete {
-            true => {
-                // Overwrite page index with 0s
-                self.write_page(page_index, &vec![0; self.page_settings.page_capacity], true)?
-                // Note:- Overwriting only the allocated bytes after reading page_payload_size is not worth an extra disk cycle(required to page_payload_size=0 in the end).
-            }
-            false => self.write_page(page_index, &[], false)?,
-        }
-
-        // Insert page index into empty page index set
-        self.empty_page_index_set.insert(page_index);
-
-        Ok(())
-        // Note: page_count is only incremental and depends last page index which is incremental too
-    }
-
+    /// Write payload at mapped page indexes
+    /// ### Parameter
+    /// - `page_payload_map`: [page_index -> page_payload]
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// use util::test_util::{make_temp_dir_n_file, rmdir_recursive};
+    /// use page_store::PageStore;
+    /// let (tmp_dir_path, tmp_file_path) = make_temp_dir_n_file("write_many_pages.test");
+    ///
+    /// let mut page_store = PageStore::open_new(&tmp_file_path, 100).unwrap();
+    /// page_store.write_many_pages(
+    ///     &[
+    ///         (0, &[1, 2, 3]),
+    ///         (1, &[4, 5, 6]),
+    ///    ]
+    /// ).unwrap();
+    ///
+    /// let page_0 = page_store.read_page(0, None, None).unwrap();
+    /// assert_eq!(page_0, vec![1, 2, 3]);
+    /// let page_1 = page_store.read_page(1, None, None).unwrap();
+    /// assert_eq!(page_1, vec![4, 5, 6]);
+    ///
+    /// rmdir_recursive(std::path::PathBuf::from(&tmp_dir_path));
+    /// ```
     pub fn write_many_pages(&mut self, page_payload_map: &[(usize, &[u8])]) -> Result<(), Error> {
-        for (page_index, page_payload) in page_payload_map {
-            self.write_page(*page_index, page_payload, false)?;
+        // Sort page_payload_map by page_index
+        let mut page_payload_map_sorted = page_payload_map.to_vec();
+        page_payload_map_sorted
+            .sort_by(|(page_index_a, _), (page_index_b, _)| page_index_a.cmp(page_index_b));
+        for (page_index, page_payload) in page_payload_map_sorted {
+            self.write_page(page_index, page_payload, false)?;
         }
         Ok(())
     }
 
     /// Safely write multiple pages
+    ///
+    /// ### Parameter
+    /// - `payloads`: Array of page payloads
     pub fn auto_write_pages(&mut self, payloads: &[&[u8]]) -> Result<Vec<usize>, Error> {
         // allocate pages
         let page_index_list = self.get_page_indexes_for_writes(payloads.len())?;
