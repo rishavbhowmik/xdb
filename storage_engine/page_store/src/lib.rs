@@ -40,6 +40,9 @@ impl PageSettings {
             page_len,
         }
     }
+    pub fn page_capacity(&self) -> usize {
+        self.page_capacity
+    }
 }
 
 pub struct PageStore {
@@ -637,13 +640,13 @@ mod page_settings_test {
         let page_settings = PageSettings::new(page_len);
         assert!(matches!(page_settings.page_size_type, PageUsizeType::U8));
         assert_eq!(page_settings.page_len, page_len);
-        assert_eq!(page_settings.page_capacity, page_len - 1);
+        assert_eq!(page_settings.page_capacity(), page_len - 1);
 
         let page_len = u8::MAX as usize;
         let page_settings = PageSettings::new(page_len);
         assert!(matches!(page_settings.page_size_type, PageUsizeType::U8));
         assert_eq!(page_settings.page_len, page_len);
-        assert_eq!(page_settings.page_capacity, page_len - 1);
+        assert_eq!(page_settings.page_capacity(), page_len - 1);
     }
     #[test]
     pub fn test_page_settings_u16() {
@@ -651,13 +654,13 @@ mod page_settings_test {
         let page_settings = PageSettings::new(page_len);
         assert!(matches!(page_settings.page_size_type, PageUsizeType::U16));
         assert_eq!(page_settings.page_len, page_len);
-        assert_eq!(page_settings.page_capacity, page_len - 2);
+        assert_eq!(page_settings.page_capacity(), page_len - 2);
 
         let page_len = u16::MAX as usize;
         let page_settings = PageSettings::new(page_len);
         assert!(matches!(page_settings.page_size_type, PageUsizeType::U16));
         assert_eq!(page_settings.page_len, page_len);
-        assert_eq!(page_settings.page_capacity, page_len - 2);
+        assert_eq!(page_settings.page_capacity(), page_len - 2);
     }
     #[test]
     pub fn test_page_settings_u32() {
@@ -665,13 +668,13 @@ mod page_settings_test {
         let page_settings = PageSettings::new(page_len);
         assert!(matches!(page_settings.page_size_type, PageUsizeType::U32));
         assert_eq!(page_settings.page_len, page_len);
-        assert_eq!(page_settings.page_capacity, page_len - 4);
+        assert_eq!(page_settings.page_capacity(), page_len - 4);
 
         let page_len = u32::MAX as usize;
         let page_settings = PageSettings::new(page_len);
         assert!(matches!(page_settings.page_size_type, PageUsizeType::U32));
         assert_eq!(page_settings.page_len, page_len);
-        assert_eq!(page_settings.page_capacity, page_len - 4);
+        assert_eq!(page_settings.page_capacity(), page_len - 4);
     }
     #[test]
     pub fn test_page_settings_u64() {
@@ -679,12 +682,12 @@ mod page_settings_test {
         let page_settings = PageSettings::new(page_len);
         assert!(matches!(page_settings.page_size_type, PageUsizeType::U64));
         assert_eq!(page_settings.page_len, page_len);
-        assert_eq!(page_settings.page_capacity, page_len - 8);
+        assert_eq!(page_settings.page_capacity(), page_len - 8);
 
         let page_len = u64::MAX as usize;
         let page_settings = PageSettings::new(page_len);
         assert!(matches!(page_settings.page_size_type, PageUsizeType::U64));
         assert_eq!(page_settings.page_len, page_len);
-        assert_eq!(page_settings.page_capacity, page_len - 8);
+        assert_eq!(page_settings.page_capacity(), page_len - 8);
     }
 }
