@@ -5,5 +5,6 @@ members = [
     # "storage",
     # "logchain",
     # "index",
+    "kv-db",
     "storage_engine/page_store",
 ]
