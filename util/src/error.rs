@@ -47,6 +47,25 @@ impl fmt::Debug for Error {
         }
     }
 }
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let error_type = match self.error_type {
+            ErrorType::Warning => "Warning",
+            ErrorType::Happens => "Happens",
+            ErrorType::Critical => "Critical",
+            ErrorType::Unexpected => "Unexpected",
+        };
+        if self.description.is_empty() {
+            write!(f, "{}\nCode: {}", error_type, self.code)
+        } else {
+            write!(
+                f,
+                "{}\nCode: {}\nDescription: {}",
+                error_type, self.code, self.description
+            )
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
