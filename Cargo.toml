@@ -6,4 +6,5 @@ members = [
     # "logchain",
     # "index",
     "storage_engine/page_store",
+    "storage_engine/page_list",
 ]
